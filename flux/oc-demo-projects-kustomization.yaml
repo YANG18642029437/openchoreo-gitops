@@ -10,6 +10,6 @@ spec:
   targetNamespace: default
   sourceRef:
     kind: GitRepository
-    name: sample-gitops
+    name: openchoreo-gitops
   dependsOn:
     - name: oc-demo-platform

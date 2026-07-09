@@ -251,7 +251,7 @@ spec:
         all: false
         projectName: doclet
       gitops:
-        repositoryUrl: "https://github.com/<your-org>/sample-gitops"
+        repositoryUrl: "https://github.com/<your-org>/openchoreo-gitops"
         branch: main
         targetEnvironment: staging
         deploymentPipeline: standard
@@ -274,7 +274,7 @@ spec:
         all: true
         projectName: placeholder
       gitops:
-        repositoryUrl: "https://github.com/<your-org>/sample-gitops"
+        repositoryUrl: "https://github.com/<your-org>/openchoreo-gitops"
         branch: main
         targetEnvironment: production
         deploymentPipeline: standard

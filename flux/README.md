@@ -1,6 +1,6 @@
 # GitOps with Flux CD
 
-This tutorial walks through setting up a complete GitOps workflow using OpenChoreo and Flux CD with this sample-gitops repository. You will configure Flux for resource synchronization, build and deploy a multi-component application using OpenChoreo Workflows, and promote components across environments.
+This tutorial walks through setting up a complete GitOps workflow using OpenChoreo and Flux CD with this openchoreo-gitops repository. You will configure Flux for resource synchronization, build and deploy a multi-component application using OpenChoreo Workflows, and promote components across environments.
 
 **Learning objectives:**
 
@@ -55,13 +55,13 @@ kubectl apply -f https://github.com/fluxcd/flux2/releases/latest/download/instal
 
 ## Step 1: Fork and Clone the Sample Repository
 
-1. Navigate to the [sample-gitops](https://github.com/openchoreo/sample-gitops) GitHub repository.
+1. Navigate to the [openchoreo-gitops](https://github.com/YANG18642029437/openchoreo-gitops) GitHub repository.
 2. Click **Fork** in the top-right corner.
 3. Clone your forked repository locally:
 
 ```bash
-git clone https://github.com/<your-github-username>/sample-gitops.git
-cd sample-gitops
+git clone https://github.com/<your-github-username>/openchoreo-gitops.git
+cd openchoreo-gitops
 ```
 
 ---
@@ -78,11 +78,11 @@ Edit [`flux/gitrepository.yaml`](./gitrepository.yaml) and update the `spec.url`
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: sample-gitops
+  name: openchoreo-gitops
   namespace: flux-system
 spec:
   interval: 1m
-  url: https://github.com/<your-github-username>/sample-gitops
+  url: https://github.com/<your-github-username>/openchoreo-gitops
   ref:
     branch: main
 ```
@@ -134,7 +134,7 @@ This creates five resources:
 
 | Resource | Purpose |
 |---|---|
-| **GitRepository** (`sample-gitops`) | Monitors the forked repository for changes |
+| **GitRepository** (`openchoreo-gitops`) | Monitors the forked repository for changes |
 | **Kustomization** (`namespaces`) | Syncs the `namespaces/` directory |
 | **Kustomization** (`platform-shared`) | Syncs the `platform-shared/` directory |
 | **Kustomization** (`oc-demo-platform`) | Syncs the `platform/` directory; depends on namespaces and platform-shared |
@@ -144,7 +144,7 @@ Flux uses `dependsOn` to enforce the correct apply order:
 
 ```mermaid
 graph TD
-    A["GitRepository\n(sample-gitops)"] --> B["Kustomization\n(namespaces)"]
+    A["GitRepository\n(openchoreo-gitops)"] --> B["Kustomization\n(namespaces)"]
     A --> C["Kustomization\n(platform-shared)"]
     B --> D["Kustomization\n(oc-demo-platform)"]
     C --> D
@@ -168,7 +168,7 @@ kubectl get gitrepository,kustomization -n flux-system
 To trigger an immediate sync:
 
 ```bash
-kubectl annotate gitrepository -n flux-system sample-gitops \
+kubectl annotate gitrepository -n flux-system openchoreo-gitops \
   reconcile.fluxcd.io/requestedAt="$(date +%s)" --overwrite
 ```
 
@@ -328,7 +328,7 @@ spec:
         all: false
         projectName: "doclet"
       gitops:
-        repositoryUrl: "https://github.com/<your-github-username>/sample-gitops"
+        repositoryUrl: "https://github.com/<your-github-username>/openchoreo-gitops"
         branch: "main"
         targetEnvironment: "staging"
         deploymentPipeline: "standard"
