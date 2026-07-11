@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: homelab-platform
+  namespace: argocd
+spec:
+  description: OpenChoreo homelab platform components managed by Argo CD
+  sourceRepos:
+    - https://github.com/YANG18642029437/openchoreo-gitops.git
+    - https://metallb.github.io/metallb
+    - https://kubernetes.github.io/ingress-nginx
+    - https://charts.jetstack.io
+    - https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+    - https://openbao.github.io/openbao-helm
+    - https://charts.external-secrets.io
+    - https://helm.goharbor.io
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: '*'
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: storage.k8s.io
+      kind: StorageClass
+    - group: gateway.networking.k8s.io
+      kind: GatewayClass
+    - group: cert-manager.io
+      kind: ClusterIssuer
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
