@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homelab-dns
+  namespace: homelab-dns
+data:
+  Corefile: |
+    openchoreo.home.arpa:53 {
+      errors
+      health :8080
+      ready :8181
+      file /etc/coredns/openchoreo.home.arpa.db
+      reload
+    }
+  openchoreo.home.arpa.db: |
+    $ORIGIN openchoreo.home.arpa.
+    $TTL 60
+    @ IN SOA ns.openchoreo.home.arpa. hostmaster.openchoreo.home.arpa. 2026071201 60 30 120 60
+    @ IN NS ns.openchoreo.home.arpa.
+    ns IN A 192.168.2.157
+    argocd IN A 192.168.2.159
+    harbor IN A 192.168.2.159
+    openbao IN A 192.168.2.159
+    grafana IN A 192.168.2.159
+    openchoreo IN A 192.168.2.159
+    workflow IN A 192.168.2.159
+    console IN A 192.168.2.158
+    api IN A 192.168.2.158
+    thunder IN A 192.168.2.158
+    data IN A 192.168.2.156
+    apps IN A 192.168.2.156
+    *.apps IN A 192.168.2.156
+    observer IN A 192.168.2.155
+    observability IN A 192.168.2.155
