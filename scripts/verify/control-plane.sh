@@ -6,9 +6,11 @@ cd "$repo_root"
 
 application=clusters/homelab/applications/14-openchoreo-control-plane.yaml
 values=platform/openchoreo/control-plane-values.yaml
+probe_tuner=scripts/operations/tune-backstage-probes.sh
 
 test -f "$application" || { echo "missing Control Plane Application" >&2; exit 1; }
 test -f "$values" || { echo "missing Control Plane values" >&2; exit 1; }
+test -x "$probe_tuner" || { echo "missing executable Backstage probe tuner" >&2; exit 1; }
 
 grep -q 'ghcr.io/openchoreo/helm-charts' "$application"
 grep -q 'targetRevision: 1.1.2' "$application"
@@ -17,6 +19,9 @@ grep -q '14-openchoreo-control-plane.yaml' clusters/homelab/kustomization.yaml
 grep -q 'RespectIgnoreDifferences=true' "$application"
 grep -q '/spec/template/spec/containers/0/livenessProbe' "$application"
 grep -q '/spec/strategy' "$application"
+grep -q 'jqPathExpressions' "$application"
+grep -Fq '.spec.rules[]?.backendRefs[]?.weight' "$application"
+grep -q 'initialDelaySeconds.*600' "$probe_tuner"
 
 grep -q 'api.openchoreo.home.arpa' "$values"
 grep -q 'openchoreo.home.arpa' "$values"
