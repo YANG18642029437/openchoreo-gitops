@@ -21,6 +21,7 @@ deployment:
   replicaCount: 1
   securityContext:
     readOnlyRootFilesystem: false
+    enableFsGroup: false
 
 hpa:
   enabled: false

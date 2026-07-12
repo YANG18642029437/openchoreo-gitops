@@ -11,6 +11,7 @@ test -f "$application"
 grep -q 'thunder.openchoreo.home.arpa' "$values"
 grep -q 'thunder-bootstrap-secrets' "$values"
 grep -q 'storageClass: nfs-shared' "$values"
+grep -q 'enableFsGroup: false' "$values"
 
 for key in \
   THUNDER_ADMIN_PASSWORD \
