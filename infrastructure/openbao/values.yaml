@@ -1,0 +1,58 @@
+global:
+  enabled: true
+  tlsDisable: true
+
+server:
+  image:
+    repository: quay.io/openbao/openbao
+    tag: 2.5.1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  dataStorage:
+    enabled: true
+    size: 10Gi
+    storageClass: local-path
+    accessMode: ReadWriteOnce
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  standalone:
+    enabled: false
+  ha:
+    enabled: true
+    replicas: 3
+    raft:
+      enabled: true
+      setNodeId: true
+      config: |
+        ui = true
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+        }
+        storage "raft" {
+          path = "/openbao/data"
+        }
+        service_registration "kubernetes" {}
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    activeService: true
+    hosts:
+      - host: openbao.openchoreo.home.arpa
+        paths:
+          - /
+    tls:
+      - secretName: openbao-tls
+        hosts:
+          - openbao.openchoreo.home.arpa
+
+ui:
+  enabled: true
+  serviceType: ClusterIP
+  activeOpenbaoPodOnly: true

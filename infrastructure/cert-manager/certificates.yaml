@@ -28,3 +28,29 @@ spec:
     - "*.apps.openchoreo.home.arpa"
     - observer.openchoreo.home.arpa
     - observability.openchoreo.home.arpa
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: openbao-tls
+  namespace: openbao
+spec:
+  secretName: openbao-tls
+  issuerRef:
+    name: homelab-root-ca
+    kind: ClusterIssuer
+  dnsNames:
+    - openbao.openchoreo.home.arpa
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: harbor-tls
+  namespace: harbor
+spec:
+  secretName: harbor-tls
+  issuerRef:
+    name: homelab-root-ca
+    kind: ClusterIssuer
+  dnsNames:
+    - harbor.openchoreo.home.arpa
