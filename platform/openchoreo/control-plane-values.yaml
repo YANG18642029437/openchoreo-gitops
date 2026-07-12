@@ -1,0 +1,45 @@
+openchoreoApi:
+  http:
+    hostnames:
+      - api.openchoreo.home.arpa
+  config:
+    server:
+      publicUrl: "http://api.openchoreo.home.arpa"
+
+backstage:
+  secretName: backstage-secrets
+  baseUrl: "http://openchoreo.home.arpa"
+  http:
+    hostnames:
+      - openchoreo.home.arpa
+  database:
+    type: sqlite
+    sqlite:
+      persistence:
+        enabled: true
+        size: 2Gi
+        storageClassName: nfs-shared
+        accessMode: ReadWriteOnce
+
+security:
+  oidc:
+    issuer: "http://thunder.openchoreo.home.arpa"
+    jwksUrl: "http://thunder-service.thunder.svc.cluster.local:8090/oauth2/jwks"
+    authorizationUrl: "http://thunder.openchoreo.home.arpa/oauth2/authorize"
+    tokenUrl: "http://thunder.openchoreo.home.arpa/oauth2/token"
+
+gateway:
+  infrastructure:
+    annotations:
+      metallb.io/loadBalancerIPs: 192.168.2.158
+  httpPort: 80
+  httpsPort: 443
+  tls:
+    enabled: false
+
+features:
+  secretManagement:
+    enabled: true
+
+portalAssistant:
+  enabled: false
