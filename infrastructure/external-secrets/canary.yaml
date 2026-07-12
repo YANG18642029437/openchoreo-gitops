@@ -1,0 +1,18 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: openbao-canary
+  namespace: external-secrets
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: openbao
+  target:
+    name: openbao-canary
+    creationPolicy: Owner
+  data:
+    - secretKey: admin-password
+      remoteRef:
+        key: harbor
+        property: admin_password
