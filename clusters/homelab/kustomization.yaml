@@ -16,3 +16,4 @@ resources:
   - applications/10-kgateway-crds.yaml
   - applications/11-kgateway.yaml
   - applications/12-thunder-secrets.yaml
+  - applications/13-thunder.yaml
