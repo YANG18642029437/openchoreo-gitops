@@ -21,9 +21,6 @@ deployment:
   replicaCount: 1
   securityContext:
     readOnlyRootFilesystem: false
-    runAsUser: 65534
-    runAsGroup: 65534
-    fsGroup: 65534
 
 hpa:
   enabled: false
