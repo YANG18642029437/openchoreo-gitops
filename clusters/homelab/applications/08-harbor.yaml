@@ -27,6 +27,11 @@ spec:
       namespace: harbor
       jsonPointers:
         - /data
+    - group: apps
+      kind: Deployment
+      namespace: harbor
+      jsonPointers:
+        - /spec/template/metadata/annotations
   syncPolicy:
     automated:
       prune: true
