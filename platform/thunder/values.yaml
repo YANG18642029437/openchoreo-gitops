@@ -993,6 +993,6 @@ bootstrap:
 
 persistence:
   enabled: true
-  storageClass: nfs-shared
+  storageClass: nfs-thunder
   accessMode: ReadWriteOnce
   size: 2Gi

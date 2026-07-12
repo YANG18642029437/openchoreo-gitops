@@ -10,8 +10,10 @@ test -f "$application"
 
 grep -q 'thunder.openchoreo.home.arpa' "$values"
 grep -q 'thunder-bootstrap-secrets' "$values"
-grep -q 'storageClass: nfs-shared' "$values"
+grep -q 'storageClass: nfs-thunder' "$values"
 grep -q 'enableFsGroup: false' "$values"
+
+grep -q 'mountPermissions: "0777"' infrastructure/storage/thunder-storage-class.yaml
 
 for key in \
   THUNDER_ADMIN_PASSWORD \
