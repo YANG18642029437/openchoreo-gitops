@@ -18,3 +18,4 @@ resources:
   - applications/12-thunder-secrets.yaml
   - applications/13-thunder.yaml
   - applications/14-openchoreo-control-plane.yaml
+  - applications/15-openchoreo-data-plane.yaml

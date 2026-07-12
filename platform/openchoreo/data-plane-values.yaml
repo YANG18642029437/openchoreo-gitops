@@ -1,0 +1,13 @@
+gateway:
+  infrastructure:
+    annotations:
+      metallb.io/loadBalancerIPs: 192.168.2.156
+  tls:
+    enabled: false
+
+clusterAgent:
+  planeID: default
+  serverUrl: wss://cluster-gateway.openchoreo-control-plane.svc.cluster.local:8443/ws
+  replicas: 1
+  podDisruptionBudget:
+    enabled: false
