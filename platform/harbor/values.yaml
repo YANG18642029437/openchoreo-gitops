@@ -1,0 +1,75 @@
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    certSource: secret
+    secret:
+      secretName: harbor-tls
+  ingress:
+    hosts:
+      core: harbor.openchoreo.home.arpa
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+externalURL: https://harbor.openchoreo.home.arpa
+
+existingSecretAdminPassword: harbor-secrets
+existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
+existingSecretSecretKey: harbor-secrets
+
+core:
+  replicas: 1
+  existingSecret: harbor-secrets
+  existingXsrfSecret: harbor-secrets
+
+jobservice:
+  replicas: 1
+  existingSecret: harbor-secrets
+  jobLoggers:
+    - stdout
+
+registry:
+  replicas: 1
+  existingSecret: harbor-secrets
+
+portal:
+  replicas: 1
+
+trivy:
+  enabled: false
+
+updateStrategy:
+  type: Recreate
+
+persistence:
+  enabled: true
+  resourcePolicy: keep
+  persistentVolumeClaim:
+    registry:
+      storageClass: nfs-shared
+      accessMode: ReadWriteMany
+      size: 100Gi
+    jobservice:
+      jobLog:
+        storageClass: local-path
+        accessMode: ReadWriteOnce
+        size: 2Gi
+    database:
+      storageClass: local-path
+      accessMode: ReadWriteOnce
+      size: 10Gi
+    redis:
+      storageClass: local-path
+      accessMode: ReadWriteOnce
+      size: 5Gi
+
+database:
+  type: internal
+
+redis:
+  type: internal
+
+metrics:
+  enabled: false

@@ -10,3 +10,4 @@ resources:
   - applications/05-platform-certificates.yaml
   - applications/06-openbao.yaml
   - applications/07-external-secrets.yaml
+  - applications/08-harbor.yaml
