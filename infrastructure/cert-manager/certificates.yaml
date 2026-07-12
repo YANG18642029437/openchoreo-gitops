@@ -1,0 +1,30 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: platform-ingress-tls
+  namespace: ingress-nginx
+spec:
+  secretName: platform-ingress-tls
+  duration: 2160h
+  renewBefore: 360h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: homelab-root-ca
+    kind: ClusterIssuer
+  dnsNames:
+    - argocd.openchoreo.home.arpa
+    - harbor.openchoreo.home.arpa
+    - openbao.openchoreo.home.arpa
+    - grafana.openchoreo.home.arpa
+    - openchoreo.openchoreo.home.arpa
+    - workflow.openchoreo.home.arpa
+    - console.openchoreo.home.arpa
+    - api.openchoreo.home.arpa
+    - thunder.openchoreo.home.arpa
+    - data.openchoreo.home.arpa
+    - apps.openchoreo.home.arpa
+    - "*.apps.openchoreo.home.arpa"
+    - observer.openchoreo.home.arpa
+    - observability.openchoreo.home.arpa

@@ -1,5 +1,7 @@
 controller:
   replicaCount: 2
+  extraArgs:
+    default-ssl-certificate: ingress-nginx/platform-ingress-tls
   ingressClassResource:
     default: true
   service:
