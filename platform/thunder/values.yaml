@@ -19,6 +19,8 @@ ingress:
 # SQLite requires a single writer pod
 deployment:
   replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
   securityContext:
     readOnlyRootFilesystem: false
     enableFsGroup: false
@@ -57,7 +59,7 @@ configuration:
       - "http://console.openchoreo.home.arpa"
 
 setup:
-  enabled: true
+  enabled: false
   env:
     - name: THUNDER_ADMIN_PASSWORD
       valueFrom: &adminPassword
@@ -996,3 +998,6 @@ persistence:
   storageClass: nfs-thunder
   accessMode: ReadWriteOnce
   size: 2Gi
+  # The durable PVC is managed by platform/thunder-runtime after bootstrap.
+  annotations:
+    helm.sh/hook: ""

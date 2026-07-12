@@ -12,6 +12,10 @@ grep -q 'thunder.openchoreo.home.arpa' "$values"
 grep -q 'thunder-bootstrap-secrets' "$values"
 grep -q 'storageClass: nfs-thunder' "$values"
 grep -q 'enableFsGroup: false' "$values"
+grep -q 'pullPolicy: IfNotPresent' "$values"
+grep -A1 '^setup:' "$values" | grep -q 'enabled: false'
+grep -q 'path: platform/thunder-runtime' clusters/homelab/applications/13-thunder.yaml
+grep -q 'storageClassName: nfs-thunder' platform/thunder-runtime/pvc.yaml
 
 grep -q 'mountPermissions: "0777"' infrastructure/storage/thunder-storage-class.yaml
 
