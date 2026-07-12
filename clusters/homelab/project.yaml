@@ -14,6 +14,10 @@ spec:
     - https://openbao.github.io/openbao-helm
     - https://charts.external-secrets.io
     - https://helm.goharbor.io
+    - https://github.com/kubernetes-sigs/gateway-api.git
+    - cr.kgateway.dev/kgateway-dev/charts
+    - ghcr.io/asgardeo/helm-charts
+    - ghcr.io/openchoreo/helm-charts
   destinations:
     - server: https://kubernetes.default.svc
       namespace: '*'

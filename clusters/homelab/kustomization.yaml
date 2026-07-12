@@ -11,3 +11,6 @@ resources:
   - applications/06-openbao.yaml
   - applications/07-external-secrets.yaml
   - applications/08-harbor.yaml
+  - applications/09-gateway-api.yaml
+  - applications/10-kgateway-crds.yaml
+  - applications/11-kgateway.yaml

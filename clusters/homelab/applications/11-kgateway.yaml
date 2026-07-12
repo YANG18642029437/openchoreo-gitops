@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kgateway
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: homelab-platform
+  source:
+    repoURL: cr.kgateway.dev/kgateway-dev/charts
+    chart: kgateway
+    targetRevision: v2.2.1
+    helm:
+      releaseName: kgateway
+      valuesObject:
+        controller:
+          extraEnv:
+            KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES: "true"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openchoreo-control-plane
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
