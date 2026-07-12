@@ -14,6 +14,9 @@ grep -q 'ghcr.io/openchoreo/helm-charts' "$application"
 grep -q 'targetRevision: 1.1.2' "$application"
 grep -q 'control-plane-values.yaml' "$application"
 grep -q '14-openchoreo-control-plane.yaml' clusters/homelab/kustomization.yaml
+grep -q 'RespectIgnoreDifferences=true' "$application"
+grep -q '/spec/template/spec/containers/0/livenessProbe' "$application"
+grep -q '/spec/strategy' "$application"
 
 grep -q 'api.openchoreo.home.arpa' "$values"
 grep -q 'openchoreo.home.arpa' "$values"

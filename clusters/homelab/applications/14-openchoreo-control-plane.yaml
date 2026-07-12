@@ -21,6 +21,17 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: openchoreo-control-plane
+  # Chart 1.1.2 hard-codes probes that are too aggressive for first startup on
+  # homelab disks. Preserve the validated runtime probe and Recreate strategy.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: backstage
+      namespace: openchoreo-control-plane
+      jsonPointers:
+        - /spec/strategy
+        - /spec/template/spec/containers/0/livenessProbe
+        - /spec/template/spec/containers/0/readinessProbe
   syncPolicy:
     automated:
       prune: true
@@ -28,3 +39,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
