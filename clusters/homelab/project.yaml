@@ -50,6 +50,10 @@ spec:
       kind: PriorityClass
     - group: apiregistration.k8s.io
       kind: APIService
+    - group: openchoreo.dev
+      kind: ClusterAuthzRole
+    - group: openchoreo.dev
+      kind: ClusterAuthzRoleBinding
   namespaceResourceWhitelist:
     - group: '*'
       kind: '*'

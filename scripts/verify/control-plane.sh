@@ -22,6 +22,8 @@ grep -q 'thunder-service.thunder.svc.cluster.local:8090/oauth2/jwks' "$values"
 grep -q 'metallb.io/loadBalancerIPs: 192.168.2.158' "$values"
 grep -q 'secretName: backstage-secrets' "$values"
 grep -q 'storageClassName: nfs-shared' "$values"
+grep -A1 'group: openchoreo.dev' clusters/homelab/project.yaml | grep -q 'kind: ClusterAuthzRole'
+grep -A3 'group: openchoreo.dev' clusters/homelab/project.yaml | grep -q 'kind: ClusterAuthzRoleBinding'
 
 helm template openchoreo-control-plane \
   oci://ghcr.io/openchoreo/helm-charts/openchoreo-control-plane \
