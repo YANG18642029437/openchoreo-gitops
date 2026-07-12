@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - nfs-storage-class.yaml
   - thunder-storage-class.yaml
-  - apps-storage-class.yaml

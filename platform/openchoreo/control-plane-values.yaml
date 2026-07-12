@@ -18,7 +18,7 @@ backstage:
       persistence:
         enabled: true
         size: 2Gi
-        storageClassName: nfs-apps
+        storageClassName: local-path
         accessMode: ReadWriteOnce
 
 security:
