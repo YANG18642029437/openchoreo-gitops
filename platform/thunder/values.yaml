@@ -21,6 +21,9 @@ deployment:
   replicaCount: 1
   securityContext:
     readOnlyRootFilesystem: false
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
 
 hpa:
   enabled: false
@@ -992,6 +995,6 @@ bootstrap:
 
 persistence:
   enabled: true
-  storageClass: local-path
+  storageClass: nfs-shared
   accessMode: ReadWriteOnce
   size: 2Gi
