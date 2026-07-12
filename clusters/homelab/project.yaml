@@ -28,6 +28,8 @@ spec:
       kind: ClusterRoleBinding
     - group: storage.k8s.io
       kind: StorageClass
+    - group: storage.k8s.io
+      kind: CSIDriver
     - group: gateway.networking.k8s.io
       kind: GatewayClass
     - group: cert-manager.io
