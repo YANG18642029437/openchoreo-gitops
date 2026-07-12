@@ -8,6 +8,7 @@ resources:
   - applications/03-cert-manager.yaml
   - applications/04-nfs-csi.yaml
   - applications/05-platform-certificates.yaml
+  - applications/05-argocd-access.yaml
   - applications/06-openbao.yaml
   - applications/07-external-secrets.yaml
   - applications/08-harbor.yaml
