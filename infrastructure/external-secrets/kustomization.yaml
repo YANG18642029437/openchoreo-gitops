@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - cluster-secret-store.yaml
   - canary.yaml
+  - harbor.yaml

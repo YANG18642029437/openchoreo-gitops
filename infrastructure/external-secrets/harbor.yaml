@@ -1,0 +1,38 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: harbor-secrets
+  namespace: harbor
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: openbao
+  target:
+    name: harbor-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: HARBOR_ADMIN_PASSWORD
+      remoteRef:
+        key: harbor
+        property: admin_password
+    - secretKey: secret
+      remoteRef:
+        key: harbor
+        property: core_secret
+    - secretKey: secretKey
+      remoteRef:
+        key: harbor
+        property: core_secret
+    - secretKey: CSRF_KEY
+      remoteRef:
+        key: harbor
+        property: csrf_key
+    - secretKey: JOBSERVICE_SECRET
+      remoteRef:
+        key: harbor
+        property: jobservice_secret
+    - secretKey: REGISTRY_HTTP_SECRET
+      remoteRef:
+        key: harbor
+        property: registry_http_secret
