@@ -32,6 +32,16 @@ spec:
       kind: GatewayClass
     - group: cert-manager.io
       kind: ClusterIssuer
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+    - group: networking.k8s.io
+      kind: IngressClass
+    - group: scheduling.k8s.io
+      kind: PriorityClass
+    - group: apiregistration.k8s.io
+      kind: APIService
   namespaceResourceWhitelist:
     - group: '*'
       kind: '*'
