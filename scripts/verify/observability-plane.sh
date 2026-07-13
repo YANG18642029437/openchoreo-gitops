@@ -14,6 +14,7 @@ metrics_values=platform/observability/values-metrics.yaml
 plane_values=platform/openchoreo/observability-plane-values.yaml
 secrets=platform/openchoreo/observability-runtime/external-secrets.yaml
 bootstrap=scripts/operations/register-observability-plane.sh
+external_secrets_application=clusters/homelab/applications/07-external-secrets.yaml
 chart_cache="${OPENCHOREO_CHART_CACHE:-}"
 
 chart_ref() {
@@ -38,6 +39,7 @@ grep -q 'targetRevision: 0.6.1' "$metrics_application"
 grep -q 'targetRevision: 1.1.2' "$plane_application"
 grep -q 'sync-wave: "40"' "$plane_application"
 grep -q 'argocd.argoproj.io/compare-options: ServerSideDiff=true' "$plane_application"
+grep -q 'argocd.argoproj.io/compare-options: ServerSideDiff=true' "$external_secrets_application"
 
 for application in 17-observability-logs.yaml 18-observability-traces.yaml \
   19-observability-metrics.yaml 20-openchoreo-observability-plane.yaml; do
