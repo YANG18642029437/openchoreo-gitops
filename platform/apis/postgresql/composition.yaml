@@ -1,0 +1,120 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xpostgresqls.database.openchoreo.io
+spec:
+  compositeTypeRef:
+    apiVersion: database.openchoreo.io/v1alpha1
+    kind: XPostgreSQL
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: postgresql-cluster
+            base:
+              apiVersion: postgresql.cnpg.io/v1
+              kind: Cluster
+              metadata:
+                annotations:
+                  database.openchoreo.io/port: "5432"
+              spec:
+                instances: 1
+                storage:
+                  size: 10Gi
+                  storageClass: local-path
+                bootstrap:
+                  initdb:
+                    database: app
+                    owner: app
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: metadata.name
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.namespace
+                toFieldPath: metadata.namespace
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: spec.instances
+                transforms:
+                  - type: map
+                    map:
+                      development: "1"
+                      staging: "2"
+                      production: "3"
+                  - type: convert
+                    convert:
+                      toType: int
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.instances
+                toFieldPath: spec.instances
+                policy:
+                  fromFieldPath: Optional
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.environment
+                toFieldPath: spec.storage.size
+                transforms:
+                  - type: map
+                    map:
+                      development: 10Gi
+                      staging: 20Gi
+                      production: 50Gi
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.storageGiB
+                toFieldPath: spec.storage.size
+                policy:
+                  fromFieldPath: Optional
+                transforms:
+                  - type: string
+                    string:
+                      type: Format
+                      fmt: "%dGi"
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.databaseName
+                toFieldPath: spec.bootstrap.initdb.database
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.databaseName
+                toFieldPath: spec.bootstrap.initdb.owner
+              - type: ToCompositeFieldPath
+                fromFieldPath: status.conditions[?(@.type=="Ready")].status
+                toFieldPath: status.ready
+                policy:
+                  fromFieldPath: Optional
+                transforms:
+                  - type: convert
+                    convert:
+                      toType: bool
+              - type: CombineToComposite
+                combine:
+                  strategy: string
+                  variables:
+                    - fromFieldPath: metadata.name
+                    - fromFieldPath: metadata.namespace
+                  string:
+                    fmt: "%s-rw.%s.svc.cluster.local"
+                toFieldPath: status.host
+              - type: ToCompositeFieldPath
+                fromFieldPath: 'metadata.annotations["database.openchoreo.io/port"]'
+                toFieldPath: status.port
+                transforms:
+                  - type: convert
+                    convert:
+                      toType: int
+              - type: CombineToComposite
+                combine:
+                  strategy: string
+                  variables:
+                    - fromFieldPath: metadata.name
+                  string:
+                    fmt: "%s-app"
+                toFieldPath: status.secretName
+            readinessChecks:
+              - type: MatchCondition
+                matchCondition:
+                  type: Ready
+                  status: "True"
