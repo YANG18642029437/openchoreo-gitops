@@ -31,6 +31,7 @@ grep -q 'url: DATABASE_URL' examples/smoke-app/workload.yaml
 grep -q 'visibility: \[external\]' examples/smoke-app/workload.yaml
 grep -q 'kind: Resource' examples/smoke-app/resource.yaml
 test "$(grep -c 'kind: ResourceReleaseBinding' examples/smoke-app/resource-bindings.yaml)" = 3
+test "$(grep -c 'resourceRelease: phase05-postgresql-' examples/smoke-app/resource-bindings.yaml)" = 3
 for environment in development staging production; do
   grep -q "environment: $environment" examples/smoke-app/resource-bindings.yaml
 done

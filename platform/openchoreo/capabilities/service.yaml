@@ -23,6 +23,7 @@ spec:
           enum: [Always, IfNotPresent, Never]
   resources:
     - id: deployment
+      targetPlane: dataplane
       template:
         apiVersion: apps/v1
         kind: Deployment
@@ -65,6 +66,7 @@ spec:
                       memory: 256Mi
               volumes: ${configurations.toVolumes() + dependencies.toVolumes()}
     - id: service
+      targetPlane: dataplane
       template:
         apiVersion: v1
         kind: Service
@@ -77,6 +79,7 @@ spec:
           selector: ${metadata.podSelectors}
           ports: ${workload.toServicePorts()}
     - id: httproute-external
+      targetPlane: dataplane
       forEach: '${workload.endpoints.transformMap(name, ep, "external" in ep.visibility && ep.type == "HTTP", ep)}'
       var: endpoint
       template:
@@ -109,6 +112,7 @@ spec:
                 - name: ${metadata.componentName}
                   port: ${endpoint.value.port}
     - id: env-config
+      targetPlane: dataplane
       forEach: ${configurations.toConfigEnvsByContainer()}
       var: envConfig
       template:
@@ -121,6 +125,7 @@ spec:
         data: |
           ${envConfig.envs.transformMapEntry(index, env, {env.name: env.value})}
     - id: secret-env-external
+      targetPlane: dataplane
       forEach: ${configurations.toSecretEnvsByContainer()}
       var: secretEnv
       template:
