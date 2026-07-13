@@ -73,7 +73,7 @@ docker pull nginxinc/nginx-unprivileged:1.29.3-alpine
 预期：拉取成功。上游 digest 为
 `sha256:5aea7cc516b419e3526f47dd1531be31a56a046cfe44754d94f9383e13e2ee99`。
 
-- [ ] **步骤 2：镜像到 Harbor**
+- [x] **步骤 2：镜像到 Harbor**
 
 从 `../openchoreo-infra/.private/openbao/harbor.env` 加载凭据但不输出，使用
 `--password-stdin` 登录，然后执行：
@@ -98,7 +98,7 @@ Deployment 只能使用 Harbor 仓库加该 digest，不能只使用 tag。
 - 新建：`infrastructure/ip-access/network-policy.yaml`
 - 新建：`infrastructure/ip-access/kustomization.yaml`
 
-- [ ] **步骤 1：增加命名空间与 IP 证书**
+- [x] **步骤 1：增加命名空间与 IP 证书**
 
 创建 `platform-access` 命名空间和 `ip-access-tls` Certificate，使用 ClusterIssuer
 `homelab-root-ca`、Secret `ip-access-tls`，证书包含：
@@ -108,7 +108,7 @@ ipAddresses:
   - 192.168.2.154
 ```
 
-- [ ] **步骤 2：增加六个 TLS 代理监听器**
+- [x] **步骤 2：增加六个 TLS 代理监听器**
 
 ConfigMap 定义 `8441-8446` 监听器，加载 `/etc/nginx/tls/tls.crt` 和 `tls.key`，支持
 HTTP/1.1、WebSocket Upgrade、长连接，并按下表转发：
@@ -125,7 +125,7 @@ HTTP/1.1、WebSocket Upgrade、长连接，并按下表转发：
 为每个平台增加明确的 `proxy_redirect`，将规范域名跳转改写成对应 IP 加端口。仅允许对
 OpenChoreo 的 Backstage 运行时 app-config JSON 做定点 URL 替换，禁止修改压缩 JS bundle。
 
-- [ ] **步骤 3：增加双副本 Deployment**
+- [x] **步骤 3：增加双副本 Deployment**
 
 使用任务 2 得到的 Harbor digest，并配置：
 
@@ -136,7 +136,7 @@ OpenChoreo 的 Backstage 运行时 app-config JSON 做定点 URL 替换，禁止
 - ConfigMap 与 TLS Secret 只读挂载。
 - 为无特权 Nginx 的 `/tmp`、缓存和 PID 目录提供内存型 `emptyDir`。
 
-- [ ] **步骤 4：增加固定 LoadBalancer Service**
+- [x] **步骤 4：增加固定 LoadBalancer Service**
 
 ```yaml
 type: LoadBalancer
@@ -148,13 +148,14 @@ allocateLoadBalancerNodePorts: false
 
 将 `31001-31006` 映射到 `8441-8446`，禁止显式 `nodePort`。
 
-- [ ] **步骤 5：增加最小权限 NetworkPolicy**
+- [x] **步骤 5：增加最小权限 NetworkPolicy**
 
 默认拒绝入站和出站；只允许 8441-8446 入站、到 kube-dns 的 TCP/UDP 53，以及到
 `argocd`、`ingress-nginx`、`openchoreo-control-plane`、
-`openchoreo-observability-plane` 命名空间的 TCP 80/443/8200 出站。
+`openchoreo-observability-plane` 命名空间的 TCP 80/443/8200 出站；另外只对
+`argocd` 命名空间放行 Service 转发后的 TCP/8080。
 
-- [ ] **步骤 6：渲染并确认契约 GREEN**
+- [x] **步骤 6：渲染并确认契约 GREEN**
 
 ```bash
 kubectl kustomize infrastructure/ip-access >/tmp/ip-access.yaml
@@ -166,7 +167,7 @@ kubectl apply --dry-run=server -f infrastructure/ip-access/namespace.yaml
 预期：完整 client dry-run、Namespace 服务端 dry-run 和静态契约全部 PASS；Namespace
 实际存在后，验证器自动对完整资源执行服务端 dry-run。
 
-- [ ] **步骤 7：提交网关资源**
+- [x] **步骤 7：提交网关资源**
 
 ```bash
 git add infrastructure/ip-access scripts/verify/ip-access.sh
@@ -179,13 +180,13 @@ git commit -m "feat: add private IP Web access gateway"
 - 新建：`clusters/homelab/applications/27-ip-access.yaml`
 - 修改：`clusters/homelab/kustomization.yaml`
 
-- [ ] **步骤 1：增加子 Application**
+- [x] **步骤 1：增加子 Application**
 
 使用 project `homelab-platform`、目标命名空间 `platform-access`、路径
 `infrastructure/ip-access`、sync wave `80`、自动 prune/self-heal，并在实施阶段跟踪
 `codex/ip-port-web-access`。
 
-- [ ] **步骤 2：注册到根 Kustomization**
+- [x] **步骤 2：注册到根 Kustomization**
 
 追加 `applications/27-ip-access.yaml`，渲染根目录并运行：
 
@@ -195,7 +196,7 @@ git commit -m "feat: add private IP Web access gateway"
 ./scripts/verify/ip-access.sh
 ```
 
-- [ ] **步骤 3：提交并推送实施分支**
+- [x] **步骤 3：提交并推送实施分支**
 
 ```bash
 git add clusters/homelab
@@ -203,7 +204,7 @@ git commit -m "feat: deploy IP access gateway with Argo CD"
 git push -u origin codex/ip-port-web-access
 ```
 
-- [ ] **步骤 4：部署并等待健康**
+- [x] **步骤 4：部署并等待健康**
 
 仅为引导分支跟踪而直接应用 Application，然后等待 `ip-access` Application
 `Synced/Healthy`、Certificate Ready、Deployment 2/2，以及 LoadBalancer 获得 `.154`。
