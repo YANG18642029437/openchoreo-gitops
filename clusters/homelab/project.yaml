@@ -18,6 +18,8 @@ spec:
     - cr.kgateway.dev/kgateway-dev/charts
     - ghcr.io/asgardeo/helm-charts
     - ghcr.io/openchoreo/helm-charts
+    - https://charts.crossplane.io/stable
+    - ghcr.io/cloudnative-pg/charts
   destinations:
     - server: https://kubernetes.default.svc
       namespace: '*'

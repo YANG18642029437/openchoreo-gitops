@@ -24,3 +24,5 @@ resources:
   - applications/18-observability-traces.yaml
   - applications/19-observability-metrics.yaml
   - applications/20-openchoreo-observability-plane.yaml
+  - applications/21-crossplane.yaml
+  - applications/22-cloudnative-pg.yaml
