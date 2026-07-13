@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: phase05-smoke
+  namespace: openchoreo-observability-plane
+  labels:
+    release: observability-metrics-prometheus
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      openchoreo.dev/component: phase05-smoke
+  podMetricsEndpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

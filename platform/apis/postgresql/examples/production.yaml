@@ -1,0 +1,10 @@
+apiVersion: database.openchoreo.io/v1alpha1
+kind: XPostgreSQL
+metadata:
+  name: smoke-production
+spec:
+  parameters:
+    environment: production
+    databaseName: app
+    instances: 3
+    storageGiB: 50

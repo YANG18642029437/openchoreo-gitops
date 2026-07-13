@@ -1,0 +1,47 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: phase05-smoke
+  namespace: default
+spec:
+  owner:
+    projectName: default
+    componentName: phase05-smoke
+  container:
+    image: harbor.openchoreo.home.arpa/openchoreo/phase05-smoke@sha256:313db253a3488886715582c575ee08aac11e5bdb5c4230f5bf32c7ec07a2daae
+    env:
+      - key: PORT
+        value: "8080"
+      - key: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://opentelemetry-collector.openchoreo-observability-plane.svc.cluster.local:4318
+  dependencies:
+    resources:
+      - ref: phase05-postgresql
+        envBindings:
+          url: DATABASE_URL
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      basePath: /
+      visibility: [external]
+      schema:
+        type: REST
+        content: |
+          openapi: 3.0.3
+          info:
+            title: Phase 05 smoke API
+            version: 1.0.0
+          paths:
+            /healthz:
+              get:
+                responses:
+                  "200": {description: Healthy}
+            /readyz:
+              get:
+                responses:
+                  "200": {description: Ready}
+            /api/db:
+              get:
+                responses:
+                  "200": {description: Database round trip succeeded}

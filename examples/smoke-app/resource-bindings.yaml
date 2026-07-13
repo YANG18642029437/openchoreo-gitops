@@ -1,0 +1,38 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: phase05-postgresql-development
+  namespace: default
+spec:
+  owner:
+    projectName: default
+    resourceName: phase05-postgresql
+  environment: development
+  resourceRelease: phase05-postgresql-7dbf8c5c8c
+  retainPolicy: Delete
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: phase05-postgresql-staging
+  namespace: default
+spec:
+  owner:
+    projectName: default
+    resourceName: phase05-postgresql
+  environment: staging
+  resourceRelease: phase05-postgresql-7dbf8c5c8c
+  retainPolicy: Delete
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: phase05-postgresql-production
+  namespace: default
+spec:
+  owner:
+    projectName: default
+    resourceName: phase05-postgresql
+  environment: production
+  resourceRelease: phase05-postgresql-7dbf8c5c8c
+  retainPolicy: Delete

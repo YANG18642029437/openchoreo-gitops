@@ -18,6 +18,8 @@ spec:
     - cr.kgateway.dev/kgateway-dev/charts
     - ghcr.io/asgardeo/helm-charts
     - ghcr.io/openchoreo/helm-charts
+    - https://charts.crossplane.io/stable
+    - ghcr.io/cloudnative-pg/charts
   destinations:
     - server: https://kubernetes.default.svc
       namespace: '*'
@@ -54,6 +56,16 @@ spec:
       kind: ClusterAuthzRole
     - group: openchoreo.dev
       kind: ClusterAuthzRoleBinding
+    - group: apiextensions.crossplane.io
+      kind: CompositeResourceDefinition
+    - group: apiextensions.crossplane.io
+      kind: Composition
+    - group: pkg.crossplane.io
+      kind: Function
+    - group: openchoreo.dev
+      kind: ClusterResourceType
+    - group: openchoreo.dev
+      kind: ClusterComponentType
   namespaceResourceWhitelist:
     - group: '*'
       kind: '*'

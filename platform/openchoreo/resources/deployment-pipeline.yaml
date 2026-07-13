@@ -1,0 +1,24 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: DeploymentPipeline
+metadata:
+  name: default
+  namespace: default
+  annotations:
+    openchoreo.dev/display-name: Default Pipeline
+    openchoreo.dev/description: Development to staging to production promotion path
+  labels:
+    openchoreo.dev/name: default
+spec:
+  promotionPaths:
+    - sourceEnvironmentRef:
+        kind: Environment
+        name: development
+      targetEnvironmentRefs:
+        - kind: Environment
+          name: staging
+    - sourceEnvironmentRef:
+        kind: Environment
+        name: staging
+      targetEnvironmentRefs:
+        - kind: Environment
+          name: production
