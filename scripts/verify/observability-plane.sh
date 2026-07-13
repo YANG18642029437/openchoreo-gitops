@@ -42,7 +42,10 @@ grep -q 'argocd.argoproj.io/compare-options: ServerSideDiff=true' "$traces_appli
 grep -q 'argocd.argoproj.io/compare-options: ServerSideDiff=true' "$metrics_application"
 grep -q 'targetRevision: 1.1.2' "$plane_application"
 grep -q 'sync-wave: "40"' "$plane_application"
-grep -q 'argocd.argoproj.io/compare-options: ServerSideDiff=true' "$plane_application"
+if grep -q 'argocd.argoproj.io/compare-options: ServerSideDiff=true' "$plane_application"; then
+  echo 'Observability Plane must use normal diff for its API-defaulted immutable PVC' >&2
+  exit 1
+fi
 grep -q 'argocd.argoproj.io/compare-options: ServerSideDiff=true' "$external_secrets_application"
 
 for application in 17-observability-logs.yaml 18-observability-traces.yaml \

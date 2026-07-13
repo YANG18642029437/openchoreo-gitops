@@ -5,7 +5,6 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "40"
-    argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
   project: homelab-platform
   sources:
