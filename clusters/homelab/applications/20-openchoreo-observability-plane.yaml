@@ -22,6 +22,15 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: openchoreo-observability-plane
+  # The chart omits storageClassName and Kubernetes fills in the cluster
+  # default. Ignore only that immutable API-defaulted field on this PVC.
+  ignoreDifferences:
+    - group: ""
+      kind: PersistentVolumeClaim
+      name: observer-alerts-data
+      namespace: openchoreo-observability-plane
+      jsonPointers:
+        - /spec/storageClassName
   syncPolicy:
     automated:
       prune: true
@@ -29,3 +38,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true

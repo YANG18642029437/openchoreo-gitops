@@ -67,6 +67,23 @@ grep -q 'failureThreshold: 12' "$metrics_values"
 grep -q 'timeoutSeconds: 10' "$metrics_values"
 
 grep -q 'metallb.io/loadBalancerIPs: 192.168.2.155' "$plane_values"
+
+ruby -ryaml -e '
+  application = YAML.safe_load(File.read(ARGV.fetch(0)), aliases: true)
+  ignored = application.dig("spec", "ignoreDifferences") || []
+  matched = ignored.any? do |rule|
+    rule["group"] == "" &&
+      rule["kind"] == "PersistentVolumeClaim" &&
+      rule["name"] == "observer-alerts-data" &&
+      rule["namespace"] == "openchoreo-observability-plane" &&
+      (rule["jsonPointers"] || []).include?("/spec/storageClassName")
+  end
+  exit(matched ? 0 : 1)
+' "$plane_application" || {
+  echo 'Observer PVC default StorageClass drift is not ignored precisely' >&2
+  exit 1
+}
+grep -q 'RespectIgnoreDifferences=true' "$plane_application"
 grep -q 'secretName: observer-secret' "$plane_values"
 grep -q 'openSearchSecretName: opensearch-admin-credentials' "$plane_values"
 grep -q 'serverUrl: wss://cluster-gateway.openchoreo-control-plane.svc.cluster.local:8443/ws' "$plane_values"
