@@ -15,6 +15,7 @@ plane_values=platform/openchoreo/observability-plane-values.yaml
 secrets=platform/openchoreo/observability-runtime/external-secrets.yaml
 bootstrap=scripts/operations/register-observability-plane.sh
 external_secrets_application=clusters/homelab/applications/07-external-secrets.yaml
+nfs_storage_class=infrastructure/storage/nfs-storage-class.yaml
 chart_cache="${OPENCHOREO_CHART_CACHE:-}"
 
 chart_ref() {
@@ -71,6 +72,7 @@ grep -q 'kind: ExternalSecret' "$secrets"
 grep -q 'name: openbao' "$secrets"
 grep -q 'deletionPolicy: Retain' "$secrets"
 grep -q 'conversionStrategy: Default' "$secrets"
+grep -q 'storageclass.kubernetes.io/is-default-class: "false"' "$nfs_storage_class"
 grep -q 'kind: ClusterObservabilityPlane' "$bootstrap"
 grep -q 'observerURL:' "$bootstrap"
 
