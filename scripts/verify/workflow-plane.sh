@@ -18,6 +18,8 @@ grep -q 'openchoreo-workflow-plane' "$application"
 grep -q 'targetRevision: 1.1.2' "$application"
 grep -q 'sync-wave: "30"' "$application"
 grep -q 'workflow-runtime' "$application"
+grep -q 'managedFieldsManagers' "$application"
+grep -q 'kube-apiserver' "$application"
 grep -q '16-openchoreo-workflow-plane.yaml' clusters/homelab/kustomization.yaml
 grep -q 'serverUrl: wss://cluster-gateway.openchoreo-control-plane.svc.cluster.local:8443/ws' "$values"
 grep -q 'planeID: default' "$values"
