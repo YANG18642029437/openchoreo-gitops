@@ -21,9 +21,19 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: openbao
+  # The injector generates its serving certificate and writes the CA bundle
+  # back to this webhook at runtime. Preserve that security material while
+  # continuing to reconcile every other field from Git.
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      name: openbao-agent-injector-cfg
+      jqPathExpressions:
+        - '.webhooks[]?.clientConfig.caBundle'
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - RespectIgnoreDifferences=true
