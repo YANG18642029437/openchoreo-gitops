@@ -56,6 +56,14 @@ spec:
       kind: ClusterAuthzRole
     - group: openchoreo.dev
       kind: ClusterAuthzRoleBinding
+    - group: apiextensions.crossplane.io
+      kind: CompositeResourceDefinition
+    - group: apiextensions.crossplane.io
+      kind: Composition
+    - group: pkg.crossplane.io
+      kind: Function
+    - group: openchoreo.dev
+      kind: ClusterResourceType
   namespaceResourceWhitelist:
     - group: '*'
       kind: '*'

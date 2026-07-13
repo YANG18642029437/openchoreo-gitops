@@ -1,0 +1,53 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterResourceType
+metadata:
+  name: postgresql
+  annotations:
+    openchoreo.dev/display-name: PostgreSQL
+    openchoreo.dev/description: CloudNativePG database provisioned through Crossplane
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      properties:
+        databaseName:
+          type: string
+          default: app
+          minLength: 1
+          maxLength: 63
+          pattern: ^[a-z][a-z0-9_]*$
+        instances:
+          type: integer
+          minimum: 1
+          maximum: 3
+        storageGiB:
+          type: integer
+          minimum: 10
+          maximum: 100
+  retainPolicy: Delete
+  outputs:
+    - name: host
+      value: "${applied.postgresql.status.host}"
+    - name: port
+      value: "${string(applied.postgresql.status.port)}"
+    - name: secretName
+      value: "${applied.postgresql.status.secretName}"
+  resources:
+    - id: postgresql
+      readyWhen: >-
+        ${has(applied.postgresql.status.ready) && applied.postgresql.status.ready}
+      template:
+        apiVersion: database.openchoreo.io/v1alpha1
+        kind: XPostgreSQL
+        metadata:
+          name: ${metadata.name}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          parameters:
+            environment: ${metadata.environmentName}
+            databaseName: ${parameters.databaseName}
+            instances: >-
+              ${has(parameters.instances) ? parameters.instances : oc_omit()}
+            storageGiB: >-
+              ${has(parameters.storageGiB) ? parameters.storageGiB : oc_omit()}

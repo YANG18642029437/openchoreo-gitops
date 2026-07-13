@@ -1,0 +1,13 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: default
+  namespace: default
+  annotations:
+    openchoreo.dev/display-name: Default Project
+    openchoreo.dev/description: Homelab validation project
+  labels:
+    openchoreo.dev/name: default
+spec:
+  deploymentPipelineRef:
+    name: default
