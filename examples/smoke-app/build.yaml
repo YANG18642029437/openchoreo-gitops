@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phase05-smoke-build-provenance
+  namespace: default
+data:
+  builder: docker-buildx
+  platform: linux/amd64
+  source: examples/smoke-app/app
+  image: harbor.openchoreo.home.arpa/openchoreo/phase05-smoke:v1
+  digest: sha256:313db253a3488886715582c575ee08aac11e5bdb5c4230f5bf32c7ec07a2daae

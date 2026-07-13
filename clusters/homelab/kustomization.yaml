@@ -28,3 +28,5 @@ resources:
   - applications/22-cloudnative-pg.yaml
   - applications/23-platform-apis.yaml
   - applications/24-environments.yaml
+  - applications/25-openchoreo-capabilities.yaml
+  - applications/26-smoke-app.yaml

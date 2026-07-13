@@ -39,8 +39,14 @@ grep -q 'kind: XPostgreSQL' "$crt"
 for field in environment storageGiB instances databaseName status.host status.port status.secretName; do
   grep -q "$field" "$crt"
 done
-if rg -ni 'password|secretKeyRef' "$crt"; then
-  printf 'PostgreSQL ClusterResourceType must not expose credentials\n' >&2
+for output in database username password url; do
+  grep -A4 "name: $output" "$crt" | grep -q 'secretKeyRef:' || {
+    printf 'PostgreSQL output %s must remain a data-plane Secret reference\n' "$output" >&2
+    exit 1
+  }
+done
+if rg -n --pcre2 '^[[:space:]]*(value|stringData):[[:space:]]*["\x27]?[A-Za-z0-9@._/+:-]{8,}["\x27]?[[:space:]]*$' "$crt"; then
+  printf 'PostgreSQL ClusterResourceType contains a literal credential-like value\n' >&2
   exit 1
 fi
 

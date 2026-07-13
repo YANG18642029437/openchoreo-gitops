@@ -32,6 +32,22 @@ spec:
       value: "${string(applied.postgresql.status.port)}"
     - name: secretName
       value: "${applied.postgresql.status.secretName}"
+    - name: database
+      secretKeyRef:
+        name: "${applied.postgresql.status.secretName}"
+        key: dbname
+    - name: username
+      secretKeyRef:
+        name: "${applied.postgresql.status.secretName}"
+        key: username
+    - name: password
+      secretKeyRef:
+        name: "${applied.postgresql.status.secretName}"
+        key: password
+    - name: url
+      secretKeyRef:
+        name: "${applied.postgresql.status.secretName}"
+        key: uri
   resources:
     - id: postgresql
       readyWhen: >-
