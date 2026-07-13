@@ -60,6 +60,9 @@ grep -q 'production: 50Gi' "$composition"
 grep -q 'bootstrap.initdb.database' "$composition" || grep -q 'toFieldPath: spec.bootstrap.initdb.database' "$composition"
 grep -q 'toFieldPath: status.ready' "$composition"
 grep -q 'fromFieldPath: status.readyInstances' "$composition"
+for ready_count in 1 2 3; do
+  grep -q "\"$ready_count\": \"true\"" "$composition"
+done
 grep -q 'toFieldPath: status.host' "$composition"
 grep -q 'toFieldPath: status.port' "$composition"
 grep -q 'toFieldPath: status.secretName' "$composition"

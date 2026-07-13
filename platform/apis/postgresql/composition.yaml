@@ -86,6 +86,11 @@ spec:
                 policy:
                   fromFieldPath: Optional
                 transforms:
+                  - type: map
+                    map:
+                      "1": "true"
+                      "2": "true"
+                      "3": "true"
                   - type: convert
                     convert:
                       toType: bool
