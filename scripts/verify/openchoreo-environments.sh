@@ -53,6 +53,7 @@ grep -q 'isProduction: true' "$resources/environment-production.yaml"
 
 pipeline="$resources/deployment-pipeline.yaml"
 grep -q 'kind: DeploymentPipeline' "$pipeline"
+test "$(grep -c 'kind: Environment' "$pipeline")" = 4
 grep -A4 'name: development' "$pipeline" | grep -q 'name: staging'
 grep -A4 'name: staging' "$pipeline" | grep -q 'name: production'
 grep -q 'deploymentPipelineRef:' "$resources/project.yaml"

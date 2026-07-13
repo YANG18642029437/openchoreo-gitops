@@ -11,10 +11,14 @@ metadata:
 spec:
   promotionPaths:
     - sourceEnvironmentRef:
+        kind: Environment
         name: development
       targetEnvironmentRefs:
-        - name: staging
+        - kind: Environment
+          name: staging
     - sourceEnvironmentRef:
+        kind: Environment
         name: staging
       targetEnvironmentRefs:
-        - name: production
+        - kind: Environment
+          name: production
