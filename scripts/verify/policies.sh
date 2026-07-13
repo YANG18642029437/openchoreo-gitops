@@ -30,6 +30,11 @@ if rg -n '^[[:space:]]*targetRevision:[[:space:]]*(""|\x27\x27)?[[:space:]]*$' "
   exit 1
 fi
 
+if rg -n '^[[:space:]]*targetRevision:[[:space:]]*codex/' "${yaml_files[@]}"; then
+  printf 'policy violation: implementation branch targetRevision\n' >&2
+  exit 1
+fi
+
 if rg -n '^[[:space:]]*(image|repository):[[:space:]]*[^#[:space:]]+:latest([[:space:]]|$)|^[[:space:]]*tag:[[:space:]]*["\x27]?latest["\x27]?([[:space:]]|$)' "${yaml_files[@]}"; then
   printf 'policy violation: latest image tag\n' >&2
   exit 1
