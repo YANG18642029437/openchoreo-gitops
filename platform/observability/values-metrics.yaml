@@ -7,6 +7,9 @@ kube-prometheus-stack:
     service:
       type: ClusterIP
     prometheusSpec:
+      podMetadata:
+        labels:
+          openchoreo.dev/system-component: observability-prometheus
       retention: 15d
       retentionSize: 12GB
       resources:
