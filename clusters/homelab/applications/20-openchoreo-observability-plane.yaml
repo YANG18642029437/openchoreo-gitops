@@ -30,6 +30,18 @@ spec:
       namespace: openchoreo-observability-plane
       jsonPointers:
         - /spec/storageClassName
+    # Gateway API admission fills these semantic defaults after Helm renders
+    # the route. Ignore only the default values, not the routing targets.
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: observer
+      namespace: openchoreo-observability-plane
+      jqPathExpressions:
+        - '.spec.parentRefs[]?.group | select(. == "gateway.networking.k8s.io")'
+        - '.spec.parentRefs[]?.kind | select(. == "Gateway")'
+        - '.spec.rules[]?.backendRefs[]?.group | select(. == "")'
+        - '.spec.rules[]?.backendRefs[]?.kind | select(. == "Service")'
+        - '.spec.rules[]?.backendRefs[]?.weight | select(. == 1)'
   syncPolicy:
     automated:
       prune: true

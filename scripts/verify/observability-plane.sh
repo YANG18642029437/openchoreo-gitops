@@ -86,6 +86,29 @@ ruby -ryaml -e '
   echo 'Observer PVC default StorageClass drift is not ignored precisely' >&2
   exit 1
 }
+
+ruby -ryaml -e '
+  application = YAML.safe_load(File.read(ARGV.fetch(0)), aliases: true)
+  ignored = application.dig("spec", "ignoreDifferences") || []
+  expected = [
+    %q(.spec.parentRefs[]?.group | select(. == "gateway.networking.k8s.io")),
+    %q(.spec.parentRefs[]?.kind | select(. == "Gateway")),
+    %q(.spec.rules[]?.backendRefs[]?.group | select(. == "")),
+    %q(.spec.rules[]?.backendRefs[]?.kind | select(. == "Service")),
+    %q(.spec.rules[]?.backendRefs[]?.weight | select(. == 1))
+  ]
+  matched = ignored.any? do |rule|
+    rule["group"] == "gateway.networking.k8s.io" &&
+      rule["kind"] == "HTTPRoute" &&
+      rule["name"] == "observer" &&
+      rule["namespace"] == "openchoreo-observability-plane" &&
+      (expected - (rule["jqPathExpressions"] || [])).empty?
+  end
+  exit(matched ? 0 : 1)
+' "$plane_application" || {
+  echo 'Observer HTTPRoute API-defaulted fields are not ignored precisely' >&2
+  exit 1
+}
 grep -q 'RespectIgnoreDifferences=true' "$plane_application"
 grep -q 'secretName: observer-secret' "$plane_values"
 grep -q 'openSearchSecretName: opensearch-admin-credentials' "$plane_values"
