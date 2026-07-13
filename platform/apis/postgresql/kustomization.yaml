@@ -4,3 +4,4 @@ resources:
   - functions.yaml
   - definition.yaml
   - composition.yaml
+  - rbac.yaml

@@ -8,6 +8,7 @@ api_dir=platform/apis/postgresql
 definition="$api_dir/definition.yaml"
 composition="$api_dir/composition.yaml"
 functions="$api_dir/functions.yaml"
+rbac="$api_dir/rbac.yaml"
 development="$api_dir/examples/development.yaml"
 production="$api_dir/examples/production.yaml"
 
@@ -16,6 +17,7 @@ required=(
   "$definition"
   "$composition"
   "$functions"
+  "$rbac"
   "$development"
   "$production"
 )
@@ -57,12 +59,16 @@ grep -q 'staging: 20Gi' "$composition"
 grep -q 'production: 50Gi' "$composition"
 grep -q 'bootstrap.initdb.database' "$composition" || grep -q 'toFieldPath: spec.bootstrap.initdb.database' "$composition"
 grep -q 'toFieldPath: status.ready' "$composition"
+grep -q 'fromFieldPath: status.readyInstances' "$composition"
 grep -q 'toFieldPath: status.host' "$composition"
 grep -q 'toFieldPath: status.port' "$composition"
 grep -q 'toFieldPath: status.secretName' "$composition"
 grep -Fq 'metadata.annotations["database.openchoreo.io/port"]' "$composition"
 
 grep -q 'xpkg.crossplane.io/crossplane-contrib/function-patch-and-transform:v0.8.2' "$functions"
+grep -q 'postgresql.cnpg.io' "$rbac"
+grep -q 'clusters' "$rbac"
+grep -q 'name: crossplane' "$rbac"
 
 grep -q 'environment: development' "$development"
 grep -q 'instances: 1' "$development"

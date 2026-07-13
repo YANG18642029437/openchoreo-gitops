@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: crossplane-cloudnative-pg-composed-resources
+rules:
+  - apiGroups: [postgresql.cnpg.io]
+    resources: [clusters, clusters/status, clusters/finalizers]
+    verbs: [get, list, watch, create, update, patch, delete]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: crossplane-cloudnative-pg-composed-resources
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: crossplane-cloudnative-pg-composed-resources
+subjects:
+  - kind: ServiceAccount
+    name: crossplane
+    namespace: crossplane-system

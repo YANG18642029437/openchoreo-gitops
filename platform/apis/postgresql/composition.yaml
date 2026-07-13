@@ -81,7 +81,7 @@ spec:
                 fromFieldPath: spec.parameters.databaseName
                 toFieldPath: spec.bootstrap.initdb.owner
               - type: ToCompositeFieldPath
-                fromFieldPath: status.conditions[?(@.type=="Ready")].status
+                fromFieldPath: status.readyInstances
                 toFieldPath: status.ready
                 policy:
                   fromFieldPath: Optional
