@@ -86,6 +86,9 @@ spec:
                 policy:
                   fromFieldPath: Optional
                 transforms:
+                  - type: convert
+                    convert:
+                      toType: string
                   - type: map
                     map:
                       "1": "true"
