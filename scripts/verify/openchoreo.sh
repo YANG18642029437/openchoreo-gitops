@@ -21,7 +21,7 @@ for path in "${required[@]}"; do
   test -f "$path" || { printf 'missing Phase 05 smoke file: %s\n' "$path" >&2; exit 1; }
 done
 
-grep -q 'name: deployment/service' platform/openchoreo/capabilities/service.yaml
+grep -q 'name: service' platform/openchoreo/capabilities/service.yaml
 grep -q 'dependencies.toContainerEnvs' platform/openchoreo/capabilities/service.yaml
 grep -q 'kind: Component' examples/smoke-app/component.yaml
 grep -q 'autoDeploy: true' examples/smoke-app/component.yaml
@@ -37,6 +37,8 @@ done
 
 rendered="$(mktemp)"
 trap 'rm -f "$rendered"' EXIT
+kustomize build platform/openchoreo/capabilities >"$rendered"
+kubectl apply --dry-run=server -f "$rendered" >/dev/null
 kustomize build examples/smoke-app >"$rendered"
 kubectl apply --dry-run=server -f "$rendered" >/dev/null
 
