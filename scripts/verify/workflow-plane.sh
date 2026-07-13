@@ -18,9 +18,7 @@ grep -q 'openchoreo-workflow-plane' "$application"
 grep -q 'targetRevision: 1.1.2' "$application"
 grep -q 'sync-wave: "30"' "$application"
 grep -q 'workflow-runtime' "$application"
-grep -q 'managedFieldsManagers' "$application"
-grep -q -- '- k3s' "$application"
-grep -q 'RespectIgnoreDifferences=true' "$application"
+grep -q 'argocd.argoproj.io/compare-options: ServerSideDiff=true' "$application"
 grep -q '16-openchoreo-workflow-plane.yaml' clusters/homelab/kustomization.yaml
 grep -q 'serverUrl: wss://cluster-gateway.openchoreo-control-plane.svc.cluster.local:8443/ws' "$values"
 grep -q 'planeID: default' "$values"
@@ -28,6 +26,11 @@ grep -A2 'server:' "$values" | grep -q 'enabled: false'
 grep -q 'name: argo-build' "$runtime"
 grep -q 'kind: ClusterWorkflowPlane' "$bootstrap"
 grep -q 'name: openbao' "$bootstrap"
+
+if grep -q 'managedFieldsManagers' "$application"; then
+  echo 'Workflow Plane must use Server-Side Diff instead of ignoring CRD ownership' >&2
+  exit 1
+fi
 
 helm template openchoreo-workflow-plane \
   oci://ghcr.io/openchoreo/helm-charts/openchoreo-workflow-plane \
