@@ -1,0 +1,10 @@
+openSearch:
+  enabled: false
+
+adapter:
+  openSearchSecretName: opensearch-admin-credentials
+
+openSearchSetup:
+  openSearchSecretName: opensearch-admin-credentials
+  dataRetentionTime:
+    traces: "7d"

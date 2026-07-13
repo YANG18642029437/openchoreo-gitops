@@ -20,3 +20,7 @@ resources:
   - applications/14-openchoreo-control-plane.yaml
   - applications/15-openchoreo-data-plane.yaml
   - applications/16-openchoreo-workflow-plane.yaml
+  - applications/17-observability-logs.yaml
+  - applications/18-observability-traces.yaml
+  - applications/19-observability-metrics.yaml
+  - applications/20-openchoreo-observability-plane.yaml

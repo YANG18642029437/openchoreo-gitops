@@ -1,0 +1,33 @@
+fluent-bit:
+  enabled: true
+
+openSearch:
+  enabled: true
+  singleNode: true
+  extraEnvs:
+    - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: opensearch-admin-credentials
+          key: password
+    - name: OPENSEARCH_JAVA_OPTS
+      value: "-Xms512m -Xmx512m"
+  persistence:
+    enabled: true
+    storageClass: local-path
+    size: 20Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+adapter:
+  openSearchSecretName: opensearch-admin-credentials
+
+openSearchSetup:
+  openSearchSecretName: opensearch-admin-credentials
+  dataRetentionTime:
+    containerLogs: "7d"

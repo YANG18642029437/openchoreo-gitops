@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability-traces
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "36"
+spec:
+  project: homelab-platform
+  sources:
+    - repoURL: ghcr.io/openchoreo/helm-charts
+      chart: observability-tracing-opensearch
+      targetRevision: 0.4.1
+      helm:
+        releaseName: observability-tracing-opensearch
+        valueFiles:
+          - $values/platform/observability/values-traces.yaml
+    - repoURL: https://github.com/YANG18642029437/openchoreo-gitops.git
+      targetRevision: codex/phase04-gitops
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openchoreo-observability-plane
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

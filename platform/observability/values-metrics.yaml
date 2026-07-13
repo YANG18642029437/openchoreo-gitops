@@ -1,0 +1,23 @@
+kube-prometheus-stack:
+  prometheus:
+    service:
+      type: ClusterIP
+    prometheusSpec:
+      retention: 15d
+      retentionSize: 12GB
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: local-path
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 15Gi
