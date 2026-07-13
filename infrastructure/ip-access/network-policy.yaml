@@ -43,3 +43,9 @@ spec:
         - { protocol: TCP, port: 80 }
         - { protocol: TCP, port: 443 }
         - { protocol: TCP, port: 8200 }
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: argocd
+      ports:
+        - { protocol: TCP, port: 8080 }
