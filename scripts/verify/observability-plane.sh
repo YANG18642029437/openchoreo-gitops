@@ -68,6 +68,8 @@ grep -q 'openSearchSecretName: opensearch-admin-credentials' "$plane_values"
 grep -q 'serverUrl: wss://cluster-gateway.openchoreo-control-plane.svc.cluster.local:8443/ws' "$plane_values"
 grep -q 'kind: ExternalSecret' "$secrets"
 grep -q 'name: openbao' "$secrets"
+grep -q 'deletionPolicy: Retain' "$secrets"
+grep -q 'conversionStrategy: Default' "$secrets"
 grep -q 'kind: ClusterObservabilityPlane' "$bootstrap"
 grep -q 'observerURL:' "$bootstrap"
 
