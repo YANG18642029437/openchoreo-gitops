@@ -1,5 +1,12 @@
 fluent-bit:
   enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 25m
+      memory: 128Mi
 
 openSearch:
   enabled: true
