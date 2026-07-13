@@ -19,3 +19,4 @@ resources:
   - applications/13-thunder.yaml
   - applications/14-openchoreo-control-plane.yaml
   - applications/15-openchoreo-data-plane.yaml
+  - applications/16-openchoreo-workflow-plane.yaml

@@ -1,0 +1,20 @@
+argo-workflows:
+  controller:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+  server:
+    enabled: false
+  workflowNamespaces:
+    - argo-build
+
+clusterAgent:
+  planeID: default
+  serverUrl: wss://cluster-gateway.openchoreo-control-plane.svc.cluster.local:8443/ws
+  replicas: 1
+  podDisruptionBudget:
+    enabled: false
