@@ -140,7 +140,7 @@ OpenChoreo 的 Backstage 运行时 app-config JSON 做定点 URL 替换，禁止
 
 ```yaml
 type: LoadBalancer
-loadBalancerIP: 192.168.2.154
+metallb.io/loadBalancerIPs: 192.168.2.154
 loadBalancerSourceRanges:
   - 192.168.31.97/32
 allocateLoadBalancerNodePorts: false

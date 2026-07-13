@@ -7,7 +7,6 @@ metadata:
     metallb.io/loadBalancerIPs: 192.168.2.154
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.2.154
   allocateLoadBalancerNodePorts: false
   externalTrafficPolicy: Local
   loadBalancerSourceRanges:

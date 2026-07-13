@@ -28,7 +28,7 @@ grep -Eq 'image: harbor\.openchoreo\.home\.arpa/openchoreo/ip-access-nginx@sha25
 grep -q 'runAsNonRoot: true' "$root/deployment.yaml"
 grep -q 'readOnlyRootFilesystem: true' "$root/deployment.yaml"
 grep -q 'type: LoadBalancer' "$root/service.yaml"
-grep -q 'loadBalancerIP: 192.168.2.154' "$root/service.yaml"
+grep -q 'metallb.io/loadBalancerIPs: 192.168.2.154' "$root/service.yaml"
 grep -A2 'loadBalancerSourceRanges:' "$root/service.yaml" | grep -q '192.168.31.97/32'
 grep -q 'allocateLoadBalancerNodePorts: false' "$root/service.yaml"
 for port in 31001 31002 31003 31004 31005 31006; do
@@ -42,7 +42,7 @@ grep -q 'Upgrade' "$root/configmap.yaml"
 grep -q 'kind: NetworkPolicy' "$root/network-policy.yaml"
 grep -q 'path: infrastructure/ip-access' clusters/homelab/applications/27-ip-access.yaml
 
-if rg -n 'type: NodePort|nodePort:|Access-Control-Allow-Origin:[[:space:]]*\*|redirect.*\*' "$root"; then
+if rg -n '^[[:space:]]+loadBalancerIP:|type: NodePort|nodePort:|Access-Control-Allow-Origin:[[:space:]]*\*|redirect.*\*' "$root"; then
   printf 'IP access safety contract violation\n' >&2
   exit 1
 fi
