@@ -63,6 +63,8 @@ grep -A1 'openSearch:' "$traces_values" | grep -q 'enabled: false'
 grep -q 'traces: "7d"' "$traces_values"
 grep -q 'storageClassName: local-path' "$metrics_values"
 grep -q 'storage: 15Gi' "$metrics_values"
+grep -q 'failureThreshold: 12' "$metrics_values"
+grep -q 'timeoutSeconds: 10' "$metrics_values"
 
 grep -q 'metallb.io/loadBalancerIPs: 192.168.2.155' "$plane_values"
 grep -q 'secretName: observer-secret' "$plane_values"

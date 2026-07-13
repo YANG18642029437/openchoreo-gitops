@@ -1,4 +1,8 @@
 kube-prometheus-stack:
+  kube-state-metrics:
+    livenessProbe:
+      failureThreshold: 12
+      timeoutSeconds: 10
   prometheus:
     service:
       type: ClusterIP
