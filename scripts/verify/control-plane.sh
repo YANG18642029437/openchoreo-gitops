@@ -32,6 +32,10 @@ grep -q 'secretName: backstage-secrets' "$values"
 grep -q 'storageClassName: local-path' "$values"
 grep -q 'openchoreo.home.arpa:53' infrastructure/dns/kubernetes-coredns-custom.yaml
 grep -q 'forward . 192.168.2.157' infrastructure/dns/kubernetes-coredns-custom.yaml
+grep -Eq '^    @ IN A 192\.168\.2\.158$' infrastructure/dns/configmap.yaml || {
+  echo 'missing openchoreo.home.arpa apex A record' >&2
+  exit 1
+}
 grep -A1 'group: openchoreo.dev' clusters/homelab/project.yaml | grep -q 'kind: ClusterAuthzRole'
 grep -A3 'group: openchoreo.dev' clusters/homelab/project.yaml | grep -q 'kind: ClusterAuthzRoleBinding'
 

@@ -15,14 +15,14 @@ data:
   openchoreo.home.arpa.db: |
     $ORIGIN openchoreo.home.arpa.
     $TTL 60
-    @ IN SOA ns.openchoreo.home.arpa. hostmaster.openchoreo.home.arpa. 2026071201 60 30 120 60
+    @ IN SOA ns.openchoreo.home.arpa. hostmaster.openchoreo.home.arpa. 2026071301 60 30 120 60
     @ IN NS ns.openchoreo.home.arpa.
+    @ IN A 192.168.2.158
     ns IN A 192.168.2.157
     argocd IN A 192.168.2.159
     harbor IN A 192.168.2.159
     openbao IN A 192.168.2.159
     grafana IN A 192.168.2.159
-    openchoreo IN A 192.168.2.159
     workflow IN A 192.168.2.159
     console IN A 192.168.2.158
     api IN A 192.168.2.158
