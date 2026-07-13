@@ -79,14 +79,13 @@ docker pull nginxinc/nginx-unprivileged:1.29.3-alpine
 `--password-stdin` 登录，然后执行：
 
 ```bash
-docker tag nginxinc/nginx-unprivileged:1.29.3-alpine \
-  harbor.openchoreo.home.arpa/openchoreo/ip-access-nginx:1.29.3-alpine
-docker push harbor.openchoreo.home.arpa/openchoreo/ip-access-nginx:1.29.3-alpine
-docker inspect --format='{{json .RepoDigests}}' \
-  harbor.openchoreo.home.arpa/openchoreo/ip-access-nginx:1.29.3-alpine
+skopeo copy --override-os linux --override-arch amd64 \
+  docker://docker.io/nginxinc/nginx-unprivileged:1.29.3-alpine \
+  docker://harbor.openchoreo.home.arpa/openchoreo/ip-access-nginx:1.29.3-alpine-amd64
 ```
 
-预期：Harbor 返回 `sha256:` digest。Deployment 只能使用 Harbor 仓库加 digest，不能只使用 tag。
+实际 Harbor digest 为 `sha256:f7d0d0f2ebc0486dc110278672b9073f7fd641e58376b112b0c8865cf36d2e36`。
+Deployment 只能使用 Harbor 仓库加该 digest，不能只使用 tag。
 
 ### 任务 3：实现访问网关
 
@@ -159,11 +158,13 @@ allocateLoadBalancerNodePorts: false
 
 ```bash
 kubectl kustomize infrastructure/ip-access >/tmp/ip-access.yaml
-kubectl apply --dry-run=server -f /tmp/ip-access.yaml
+kubectl apply --dry-run=client -f /tmp/ip-access.yaml
+kubectl apply --dry-run=server -f infrastructure/ip-access/namespace.yaml
 ./scripts/verify/ip-access.sh
 ```
 
-预期：服务端 dry-run 和静态契约全部 PASS。
+预期：完整 client dry-run、Namespace 服务端 dry-run 和静态契约全部 PASS；Namespace
+实际存在后，验证器自动对完整资源执行服务端 dry-run。
 
 - [ ] **步骤 7：提交网关资源**
 

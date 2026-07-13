@@ -50,6 +50,11 @@ fi
 rendered="$(mktemp)"
 trap 'rm -f "$rendered"' EXIT
 kubectl kustomize "$root" >"$rendered"
-kubectl apply --dry-run=server -f "$rendered" >/dev/null
+kubectl apply --dry-run=client -f "$rendered" >/dev/null
+if kubectl get namespace platform-access >/dev/null 2>&1; then
+  kubectl apply --dry-run=server -f "$rendered" >/dev/null
+else
+  kubectl apply --dry-run=server -f "$root/namespace.yaml" >/dev/null
+fi
 
 printf 'IP port Web access contract: PASS\n'

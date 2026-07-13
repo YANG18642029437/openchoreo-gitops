@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ip-access-tls
+  namespace: platform-access
+spec:
+  secretName: ip-access-tls
+  issuerRef:
+    name: homelab-root-ca
+    kind: ClusterIssuer
+  ipAddresses:
+    - 192.168.2.154

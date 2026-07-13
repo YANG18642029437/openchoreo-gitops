@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ip-access-nginx
+  namespace: platform-access
+data:
+  nginx.conf: |
+    pid /tmp/nginx.pid;
+    error_log /dev/stderr notice;
+    worker_processes auto;
+
+    events {
+      worker_connections 1024;
+    }
+
+    http {
+      include /etc/nginx/mime.types;
+      default_type application/octet-stream;
+      client_body_temp_path /tmp/client_temp;
+      proxy_temp_path /tmp/proxy_temp;
+      fastcgi_temp_path /tmp/fastcgi_temp;
+      uwsgi_temp_path /tmp/uwsgi_temp;
+      scgi_temp_path /tmp/scgi_temp;
+      client_max_body_size 0;
+
+      log_format safe '$remote_addr - $status $host $request_method $uri';
+      access_log /dev/stdout safe;
+
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+      }
+
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto https;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_connect_timeout 10s;
+      proxy_read_timeout 450s;
+      proxy_send_timeout 450s;
+      proxy_request_buffering off;
+      proxy_buffering off;
+
+      ssl_protocols TLSv1.2 TLSv1.3;
+      ssl_certificate /etc/nginx/tls/tls.crt;
+      ssl_certificate_key /etc/nginx/tls/tls.key;
+      ssl_session_cache shared:SSL:10m;
+
+      server {
+        listen 8441 ssl;
+        server_name _;
+        location / {
+          proxy_set_header Host argocd.openchoreo.home.arpa;
+          proxy_ssl_verify off;
+          proxy_pass https://argocd-server.argocd.svc.cluster.local:443;
+          proxy_redirect https://argocd.openchoreo.home.arpa/ https://192.168.2.154:31001/;
+          proxy_redirect http://argocd.openchoreo.home.arpa/ https://192.168.2.154:31001/;
+        }
+      }
+
+      server {
+        listen 8442 ssl;
+        server_name _;
+        location / {
+          proxy_set_header Host harbor.openchoreo.home.arpa;
+          proxy_ssl_server_name on;
+          proxy_ssl_name harbor.openchoreo.home.arpa;
+          proxy_ssl_verify off;
+          proxy_pass https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443;
+          proxy_redirect https://harbor.openchoreo.home.arpa/ https://192.168.2.154:31002/;
+          proxy_redirect http://harbor.openchoreo.home.arpa/ https://192.168.2.154:31002/;
+        }
+      }
+
+      server {
+        listen 8443 ssl;
+        server_name _;
+        location / {
+          proxy_set_header Host openbao.openchoreo.home.arpa;
+          proxy_ssl_server_name on;
+          proxy_ssl_name openbao.openchoreo.home.arpa;
+          proxy_ssl_verify off;
+          proxy_pass https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443;
+          proxy_redirect https://openbao.openchoreo.home.arpa/ https://192.168.2.154:31003/;
+          proxy_redirect http://openbao.openchoreo.home.arpa/ https://192.168.2.154:31003/;
+        }
+      }
+
+      server {
+        listen 8444 ssl;
+        server_name _;
+        location = / {
+          proxy_set_header Host openchoreo.home.arpa;
+          proxy_set_header Accept-Encoding '';
+          proxy_pass http://gateway-default.openchoreo-control-plane.svc.cluster.local:80;
+          sub_filter_once off;
+          sub_filter 'http://openchoreo.home.arpa' 'https://192.168.2.154:31004';
+          sub_filter 'http://thunder.openchoreo.home.arpa' 'https://192.168.2.154:31006';
+        }
+        location / {
+          proxy_set_header Host openchoreo.home.arpa;
+          proxy_pass http://gateway-default.openchoreo-control-plane.svc.cluster.local:80;
+          proxy_redirect http://openchoreo.home.arpa/ https://192.168.2.154:31004/;
+          proxy_redirect http://thunder.openchoreo.home.arpa/ https://192.168.2.154:31006/;
+        }
+      }
+
+      server {
+        listen 8445 ssl;
+        server_name _;
+        location / {
+          proxy_set_header Host observer.openchoreo.home.arpa;
+          proxy_pass http://gateway-default.openchoreo-observability-plane.svc.cluster.local:80;
+          proxy_redirect http://observer.openchoreo.home.arpa/ https://192.168.2.154:31005/;
+        }
+      }
+
+      server {
+        listen 8446 ssl;
+        server_name _;
+        location / {
+          proxy_set_header Host thunder.openchoreo.home.arpa;
+          proxy_pass http://gateway-default.openchoreo-control-plane.svc.cluster.local:80;
+          proxy_redirect http://thunder.openchoreo.home.arpa/ https://192.168.2.154:31006/;
+          proxy_redirect http://openchoreo.home.arpa/ https://192.168.2.154:31004/;
+        }
+      }
+    }

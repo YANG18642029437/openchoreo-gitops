@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ip-access
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "80"
+spec:
+  project: homelab-platform
+  source:
+    repoURL: https://github.com/YANG18642029437/openchoreo-gitops.git
+    targetRevision: codex/ip-port-web-access
+    path: infrastructure/ip-access
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform-access
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
