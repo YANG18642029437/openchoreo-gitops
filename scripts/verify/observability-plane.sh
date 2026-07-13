@@ -52,6 +52,10 @@ done
 grep -q 'storageClass: local-path' "$logs_values"
 grep -q 'size: 20Gi' "$logs_values"
 grep -q 'containerLogs: "7d"' "$logs_values"
+if grep -q 'OPENSEARCH_JAVA_OPTS' "$logs_values"; then
+  echo 'OpenSearch Java options must use the chart opensearchJavaOpts value, not duplicate env entries' >&2
+  exit 1
+fi
 grep -q 'openSearch:' "$traces_values"
 grep -A1 'openSearch:' "$traces_values" | grep -q 'enabled: false'
 grep -q 'traces: "7d"' "$traces_values"

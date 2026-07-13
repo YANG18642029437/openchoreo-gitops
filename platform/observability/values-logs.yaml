@@ -10,8 +10,6 @@ openSearch:
         secretKeyRef:
           name: opensearch-admin-credentials
           key: password
-    - name: OPENSEARCH_JAVA_OPTS
-      value: "-Xms512m -Xmx512m"
   persistence:
     enabled: true
     storageClass: local-path
