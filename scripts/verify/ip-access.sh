@@ -44,6 +44,7 @@ grep -q 'http://openchoreo.home.arpa:80/' "$root/configmap.yaml"
 sed -n '/listen 8446/,/^      }/p' "$root/configmap.yaml" | grep -q "sub_filter 'http://thunder.openchoreo.home.arpa'"
 grep -q 'location = /gate/config.js' "$root/configmap.yaml"
 grep -q 'Cache-Control "no-store"' "$root/configmap.yaml"
+sed -n '/listen 8446/,/^      }/p' "$root/configmap.yaml" | grep -q 'sub_filter_types application/javascript text/javascript application/json'
 grep -q 'Upgrade' "$root/configmap.yaml"
 grep -q 'kind: NetworkPolicy' "$root/network-policy.yaml"
 grep -q 'port: 8080' "$root/network-policy.yaml"

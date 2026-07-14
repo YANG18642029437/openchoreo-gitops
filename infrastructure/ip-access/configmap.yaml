@@ -130,7 +130,7 @@ data:
           add_header Cache-Control "no-store" always;
           proxy_pass http://gateway-default.openchoreo-control-plane.svc.cluster.local:80;
           sub_filter_once off;
-          sub_filter_types application/javascript text/javascript;
+          sub_filter_types application/javascript text/javascript application/json;
           sub_filter 'http://thunder.openchoreo.home.arpa' 'https://192.168.2.154:31006';
           sub_filter 'http://openchoreo.home.arpa' 'https://192.168.2.154:31004';
         }
@@ -139,7 +139,7 @@ data:
           proxy_set_header Accept-Encoding '';
           proxy_pass http://gateway-default.openchoreo-control-plane.svc.cluster.local:80;
           sub_filter_once off;
-          sub_filter_types application/javascript text/javascript;
+          sub_filter_types application/javascript text/javascript application/json;
           sub_filter 'http://thunder.openchoreo.home.arpa' 'https://192.168.2.154:31006';
           sub_filter 'http://openchoreo.home.arpa' 'https://192.168.2.154:31004';
           proxy_redirect http://thunder.openchoreo.home.arpa:80/ https://192.168.2.154:31006/;
