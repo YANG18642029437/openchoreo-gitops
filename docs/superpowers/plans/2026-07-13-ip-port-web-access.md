@@ -30,7 +30,7 @@ infrastructure/ip-access/kustomization.yaml
 clusters/homelab/applications/27-ip-access.yaml
 ```
 
-检查固定 IP、六个端口、`192.168.31.97/32` 来源限制、双副本、反亲和、IP SAN
+检查固定 IP、六个端口、`10.8.0.10/32` 来源限制、双副本、反亲和、IP SAN
 证书、Harbor digest 镜像，并禁止 NodePort、通配 CORS 和通配重定向。
 
 - [x] **步骤 2：运行测试并确认 RED**
@@ -142,7 +142,7 @@ OpenChoreo 的 Backstage 运行时 app-config JSON 做定点 URL 替换，禁止
 type: LoadBalancer
 metallb.io/loadBalancerIPs: 192.168.2.154
 loadBalancerSourceRanges:
-  - 192.168.31.97/32
+  - 10.8.0.10/32
 allocateLoadBalancerNodePorts: false
 ```
 

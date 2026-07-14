@@ -29,7 +29,7 @@ grep -q 'runAsNonRoot: true' "$root/deployment.yaml"
 grep -q 'readOnlyRootFilesystem: true' "$root/deployment.yaml"
 grep -q 'type: LoadBalancer' "$root/service.yaml"
 grep -q 'metallb.io/loadBalancerIPs: 192.168.2.154' "$root/service.yaml"
-grep -A2 'loadBalancerSourceRanges:' "$root/service.yaml" | grep -q '192.168.31.97/32'
+grep -A2 'loadBalancerSourceRanges:' "$root/service.yaml" | grep -q '10.8.0.10/32'
 grep -q 'allocateLoadBalancerNodePorts: false' "$root/service.yaml"
 for port in 31001 31002 31003 31004 31005 31006; do
   grep -q "port: $port" "$root/service.yaml"

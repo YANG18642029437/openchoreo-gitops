@@ -1,7 +1,7 @@
 # IP 加端口访问 Web 平台
 
-这组入口通过 MetalLB 固定地址 `192.168.2.154` 提供 HTTPS，只允许当前 Mac
-`192.168.31.97/32` 访问。原有域名入口继续保留。
+这组入口通过 MetalLB 固定地址 `192.168.2.154` 提供 HTTPS，只允许当前 Mac 的
+OpenVPN 地址 `10.8.0.10/32` 访问。原有域名入口继续保留。
 
 | 平台 | 访问地址 | 说明 |
 | --- | --- | --- |
@@ -15,11 +15,11 @@
 ## 使用前提
 
 1. Mac 必须信任 `openchoreo-infra/.private/pki/root-ca.crt` 对应的内部根 CA。
-2. 访问时关闭 Shadowrocket 的 TUN，或确保 `192.168.2.0/24` 使用家庭网络直连。
-3. Mac 地址发生变化后，必须把 `service.yaml` 中的来源限制改成新的单个 `/32`，禁止为了方便开放整个网段。
+2. 保持 OpenVPN 连接；`192.168.2.0/24` 通过 `utun7` 和 OpenVPN 对端 `10.8.0.9` 访问。
+3. OpenVPN 分配给 Mac 的地址发生变化后，必须把 `service.yaml` 中的来源限制改成新的单个 `/32`，禁止为了方便开放整个网段。
 
-当前 Mac 开启 Shadowrocket 时，系统路由会把 `192.168.2.154` 送往 `utun7`，表现为所有
-端口连接超时。这不代表 Kubernetes 网关或后端平台故障。
+Shadowrocket 使用的是 `utun4`，OpenVPN 使用的是 `utun7`。访问服务器网段走 `utun7`
+是正确行为，不需要关闭 Shadowrocket；如果全部端口超时，应先检查 OpenVPN 地址是否仍在来源白名单内。
 
 ## 自动验收
 
@@ -33,7 +33,7 @@ export KUBECONFIG=../openchoreo-infra/.private/kubeconfigs/homelab-admin-direct.
 
 ## 排障
 
-- 全部端口超时：先运行 `route -n get 192.168.2.154`，确认没有走 `utun`。
+- 全部端口超时：运行 `route -n get 192.168.2.154`，确认走 OpenVPN 的 `utun7`，再核对白名单中的 `/32`。
 - 浏览器报告证书不可信：将内部根 CA 加入 macOS 钥匙串并设为信任，不要忽略证书告警。
 - 只有一个平台失败：查看 `platform-access` 命名空间的 Pod 日志和对应后端 Service。
 - Argo 显示 504：确认 NetworkPolicy 允许到 `argocd` 命名空间的 TCP/8080。
