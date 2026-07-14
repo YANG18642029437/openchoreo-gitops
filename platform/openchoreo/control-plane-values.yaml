@@ -9,6 +9,10 @@ openchoreoApi:
 backstage:
   secretName: backstage-secrets
   baseUrl: "http://openchoreo.home.arpa"
+  appConfig:
+    auth:
+      experimentalExtraAllowedOrigins:
+        - "https://192.168.2.154:31004"
   http:
     hostnames:
       - openchoreo.home.arpa
