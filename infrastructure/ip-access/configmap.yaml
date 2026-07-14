@@ -120,6 +120,20 @@ data:
       server {
         listen 8446 ssl;
         server_name _;
+        location = /gate/config.js {
+          proxy_set_header Host thunder.openchoreo.home.arpa;
+          proxy_set_header Accept-Encoding '';
+          proxy_set_header If-None-Match '';
+          proxy_set_header If-Modified-Since '';
+          proxy_hide_header ETag;
+          proxy_hide_header Last-Modified;
+          add_header Cache-Control "no-store" always;
+          proxy_pass http://gateway-default.openchoreo-control-plane.svc.cluster.local:80;
+          sub_filter_once off;
+          sub_filter_types application/javascript text/javascript;
+          sub_filter 'http://thunder.openchoreo.home.arpa' 'https://192.168.2.154:31006';
+          sub_filter 'http://openchoreo.home.arpa' 'https://192.168.2.154:31004';
+        }
         location / {
           proxy_set_header Host thunder.openchoreo.home.arpa;
           proxy_set_header Accept-Encoding '';
