@@ -296,7 +296,7 @@ bootstrap:
               "client_id": "openchoreo-backstage-client",
               "client_secret": "'"$BACKSTAGE_CLIENT_SECRET"'",
               "redirect_uris": [
-                "http://console.openchoreo.home.arpa/api/auth/openchoreo-auth/handler/frame"
+                "http://openchoreo.home.arpa/api/auth/openchoreo-auth/handler/frame"
               ],
               "grant_types": [
                 "authorization_code",
@@ -348,11 +348,16 @@ bootstrap:
         ]
       }'
 
+      # Thunder generates a new client secret when client_secret is included in
+      # an application update. Omit it on PUT so an endpoint-only change does
+      # not invalidate the secret already consumed by Backstage.
+      BACKSTAGE_UPDATE_PAYLOAD="$(printf '%s\n' "$APP_PAYLOAD" | sed '/"client_secret":/d')"
+
       if [ -n "$app_id" ]; then
         log_info "Application 'Backstage' already exists (id: $app_id), updating..."
         curl --location -X PUT "${THUNDER_URL}/applications/$app_id" \
           --header 'Content-Type: application/json' \
-          --data "$APP_PAYLOAD" \
+          --data "$BACKSTAGE_UPDATE_PAYLOAD" \
           --fail-with-body \
           --max-time 30 \
           --retry 3 \

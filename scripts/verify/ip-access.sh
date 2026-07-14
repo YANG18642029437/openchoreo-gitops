@@ -39,6 +39,8 @@ for host in argocd harbor openbao observer thunder; do
   grep -q "$host.openchoreo.home.arpa" "$root/configmap.yaml"
 done
 grep -q 'openchoreo.home.arpa' "$root/configmap.yaml"
+grep -q 'http://thunder.openchoreo.home.arpa:80/' "$root/configmap.yaml"
+grep -q 'http://openchoreo.home.arpa:80/' "$root/configmap.yaml"
 grep -q 'Upgrade' "$root/configmap.yaml"
 grep -q 'kind: NetworkPolicy' "$root/network-policy.yaml"
 grep -q 'port: 8080' "$root/network-policy.yaml"

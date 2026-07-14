@@ -123,7 +123,9 @@ data:
         location / {
           proxy_set_header Host thunder.openchoreo.home.arpa;
           proxy_pass http://gateway-default.openchoreo-control-plane.svc.cluster.local:80;
+          proxy_redirect http://thunder.openchoreo.home.arpa:80/ https://192.168.2.154:31006/;
           proxy_redirect http://thunder.openchoreo.home.arpa/ https://192.168.2.154:31006/;
+          proxy_redirect http://openchoreo.home.arpa:80/ https://192.168.2.154:31004/;
           proxy_redirect http://openchoreo.home.arpa/ https://192.168.2.154:31004/;
         }
       }
