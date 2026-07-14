@@ -41,6 +41,7 @@ done
 grep -q 'openchoreo.home.arpa' "$root/configmap.yaml"
 grep -q 'http://thunder.openchoreo.home.arpa:80/' "$root/configmap.yaml"
 grep -q 'http://openchoreo.home.arpa:80/' "$root/configmap.yaml"
+sed -n '/listen 8446/,/^      }/p' "$root/configmap.yaml" | grep -q "sub_filter 'http://thunder.openchoreo.home.arpa'"
 grep -q 'Upgrade' "$root/configmap.yaml"
 grep -q 'kind: NetworkPolicy' "$root/network-policy.yaml"
 grep -q 'port: 8080' "$root/network-policy.yaml"
