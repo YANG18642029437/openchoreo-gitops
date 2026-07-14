@@ -9,7 +9,7 @@ spec:
   project: homelab-platform
   source:
     repoURL: https://github.com/YANG18642029437/openchoreo-gitops.git
-    targetRevision: codex/ip-port-web-access
+    targetRevision: main
     path: infrastructure/ip-access
   destination:
     server: https://kubernetes.default.svc

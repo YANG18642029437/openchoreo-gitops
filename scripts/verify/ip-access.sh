@@ -43,6 +43,7 @@ grep -q 'Upgrade' "$root/configmap.yaml"
 grep -q 'kind: NetworkPolicy' "$root/network-policy.yaml"
 grep -q 'port: 8080' "$root/network-policy.yaml"
 grep -q 'path: infrastructure/ip-access' clusters/homelab/applications/27-ip-access.yaml
+grep -q 'targetRevision: main' clusters/homelab/applications/27-ip-access.yaml
 
 if rg -n 'externalTrafficPolicy: Local|^[[:space:]]+loadBalancerIP:|type: NodePort|nodePort:|Access-Control-Allow-Origin:[[:space:]]*\*|redirect.*\*' "$root"; then
   printf 'IP access safety contract violation\n' >&2
