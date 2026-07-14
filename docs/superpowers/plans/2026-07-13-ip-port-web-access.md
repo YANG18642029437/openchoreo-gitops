@@ -209,10 +209,10 @@ git push -u origin codex/ip-port-web-access
 仅为引导分支跟踪而直接应用 Application，然后等待 `ip-access` Application
 `Synced/Healthy`、Certificate Ready、Deployment 2/2，以及 LoadBalancer 获得 `.154`。
 
-- [ ] **步骤 5：确认集群观察到的 Mac 来源地址**
+- [x] **步骤 5：确认集群观察到的 Mac 来源地址**
 
-从 Mac 请求一个入口。如果 `/32` 限制拒绝访问，只捕获宣布节点上连接的来源地址元数据，
-把规则改成实际观察到的单个 `/32` 后重试，禁止扩大到整个网段。
+从 Mac 请求一个入口。通过现有 ingress-nginx 的唯一探测路径确认 OpenVPN 网关将来源
+SNAT 为 `192.168.1.108`，规则最终只允许 `192.168.1.108/32`，没有扩大到整个网段。
 
 ### 任务 5：验证六个 Web 平台
 
@@ -220,7 +220,7 @@ git push -u origin codex/ip-port-web-access
 - 新建：`scripts/verify/ip-access-live.sh`
 - 新建：`docs/access/ip-port-web-access.md`
 
-- [ ] **步骤 1：增加自动化在线探测**
+- [x] **步骤 1：增加自动化在线探测**
 
 不使用 `-k` 请求六个 IP-port URL，要求内部 CA 证书有效、响应为已记录的 2xx/3xx，
 禁止跳回规范域名，验证证书 IP SAN，并确认内部 ClusterIP 服务没有新增外部入口。
@@ -230,7 +230,7 @@ git push -u origin codex/ip-port-web-access
 使用已有登录状态的 Chrome，逐一检查页面加载、登录、导航、API、重定向循环、Cookie 和
 WebSocket。OpenChoreo 额外验证 Thunder 登录回调、项目页和组件页。
 
-- [ ] **步骤 3：验证现有域名入口无回归**
+- [x] **步骤 3：验证现有域名入口无回归**
 
 对六个规范域名运行相同的基础操作，确保原入口继续可用。
 
@@ -238,7 +238,10 @@ WebSocket。OpenChoreo 额外验证 Thunder 登录回调、项目页和组件页
 
 不删除任何平台资源。仅滚动重启一个网关 Pod，确认六个入口持续可用并恢复到 2/2。
 
-- [ ] **步骤 5：记录入口并提交**
+实测单个容器异常退出后自动恢复，但连续探测记录到约 5–8 秒超时。个人实验环境先记录该
+MetalLB L2/EndpointSlice 收敛窗口，不把本步骤标记为零中断通过。
+
+- [x] **步骤 5：记录入口并提交**
 
 文档记录六个 URL、来源限制、CA 要求、排障和回滚，然后提交：
 

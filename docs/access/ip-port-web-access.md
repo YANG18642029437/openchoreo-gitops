@@ -45,3 +45,9 @@ export KUBECONFIG=../openchoreo-infra/.private/kubeconfigs/homelab-admin-direct.
 
 删除或禁用 Argo CD 的 `ip-access` Application 即可撤销这组入口；不要删除六个平台本身。
 原域名入口与内部 ClusterIP 服务不依赖该网关。
+
+## 已知限制
+
+网关使用两个跨节点副本和 MetalLB L2 地址。在单个 Nginx 容器异常退出的实测中，入口会
+出现约 5–8 秒连接超时，随后自动恢复；这是 EndpointSlice、MetalLB L2 重新宣布和客户端
+ARP 收敛的组合窗口。个人实验环境暂时接受该窗口，不把它描述为零中断高可用。
