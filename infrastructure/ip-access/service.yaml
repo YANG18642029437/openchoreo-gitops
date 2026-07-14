@@ -10,7 +10,7 @@ spec:
   allocateLoadBalancerNodePorts: false
   externalTrafficPolicy: Local
   loadBalancerSourceRanges:
-    - 10.8.0.10/32
+    - 192.168.1.108/32
   selector:
     app.kubernetes.io/name: ip-access-nginx
   ports:

@@ -48,7 +48,7 @@ if command -v kubectl >/dev/null 2>&1; then
   test "$(kubectl -n openchoreo-observability-plane get service observer -o jsonpath='{.spec.type}')" = ClusterIP
   test "$(kubectl -n thunder get service thunder-service -o jsonpath='{.spec.type}')" = ClusterIP
   ranges="$(kubectl -n platform-access get service ip-access -o jsonpath='{.spec.loadBalancerSourceRanges[*]}')"
-  test "$ranges" = '10.8.0.10/32'
+  test "$ranges" = '192.168.1.108/32'
 fi
 
 printf 'IP port Web access live verification: PASS\n'
