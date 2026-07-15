@@ -376,6 +376,7 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 | `docs/superpowers/plans/2026-07-15-agent-platform-managed-resources.md` | Agent Platform 开发环境 MinIO、RabbitMQ、Milvus 的测试先行、分阶段发布和集群验收计划。 |
 | `docs/superpowers/specs/2026-07-13-ip-port-web-access-design.md` | IP 访问入口的目标、架构、端口、路由、安全边界和回滚设计。 |
 | `docs/superpowers/specs/2026-07-15-agent-platform-managed-resources-design.md` | Agent Platform 开发环境 MinIO、RabbitMQ、Milvus 的 OpenChoreo 资源、凭据、发布顺序和验收设计。 |
+| `docs/superpowers/specs/2026-07-15-agent-platform-postgresql-redis-design.md` | Agent Platform development 环境 PostgreSQL、Redis 的单实例资源、凭据边界、发布与验收设计。 |
 
 ### `flux/`：官方 Flux CD 保留示例
 
