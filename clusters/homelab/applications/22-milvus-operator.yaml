@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: milvus-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "50"
+spec:
+  project: homelab-platform
+  source:
+    repoURL: https://zilliztech.github.io/milvus-operator/
+    chart: milvus-operator
+    targetRevision: 1.3.7
+    helm:
+      releaseName: milvus-operator
+      values: |
+        cert-manager:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: milvus-operator
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -20,6 +20,8 @@ spec:
     - ghcr.io/openchoreo/helm-charts
     - https://charts.crossplane.io/stable
     - ghcr.io/cloudnative-pg/charts
+    - https://github.com/rabbitmq/cluster-operator.git
+    - https://zilliztech.github.io/milvus-operator/
   destinations:
     - server: https://kubernetes.default.svc
       namespace: '*'

@@ -26,6 +26,8 @@ resources:
   - applications/20-openchoreo-observability-plane.yaml
   - applications/21-crossplane.yaml
   - applications/22-cloudnative-pg.yaml
+  - applications/22-rabbitmq-cluster-operator.yaml
+  - applications/22-milvus-operator.yaml
   - applications/23-platform-apis.yaml
   - applications/24-environments.yaml
   - applications/25-openchoreo-capabilities.yaml
