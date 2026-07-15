@@ -54,8 +54,12 @@ grep -Fq 'redis-cli ping' "$types_base/cluster-resource-type-redis.yaml"
 grep -Fq 'secretPath: agent-platform/development/redis' "$project_base/resources.yaml"
 grep -Fq 'databaseName: agent_platform' "$project_base/resources.yaml"
 test "$(grep -c '^kind: Resource$' "$project_base/resources.yaml")" -eq 5
+grep -Fq 'name: postgresql-development' "$project_base/resource-bindings.yaml"
+grep -Fq 'resourceRelease: postgresql-' "$project_base/resource-bindings.yaml"
+grep -Fq 'name: redis-development' "$project_base/resource-bindings.yaml"
+grep -Fq 'resourceRelease: redis-' "$project_base/resource-bindings.yaml"
 binding_count="$(grep -c '^kind: ResourceReleaseBinding$' "$project_base/resource-bindings.yaml")"
-test "$binding_count" -ge 3
+test "$binding_count" -eq 5
 test "$(grep -c 'retainPolicy: Retain' "$project_base/resource-bindings.yaml")" -eq "$binding_count"
 
 rendered="$(mktemp "${TMPDIR:-/tmp}/agent-platform-resources.XXXXXX")"

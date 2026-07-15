@@ -37,3 +37,29 @@ spec:
   environment: development
   retainPolicy: Retain
   resourceRelease: milvus-c84654c84
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: postgresql-development
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+    resourceName: postgresql
+  environment: development
+  retainPolicy: Retain
+  resourceRelease: postgresql-d58c5c5cd
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: redis-development
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+    resourceName: redis
+  environment: development
+  retainPolicy: Retain
+  resourceRelease: redis-6965c69987
