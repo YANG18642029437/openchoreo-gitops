@@ -36,4 +36,4 @@ spec:
     resourceName: milvus
   environment: development
   retainPolicy: Retain
-  resourceRelease: milvus-9c7cff786
+  resourceRelease: milvus-c84654c84
