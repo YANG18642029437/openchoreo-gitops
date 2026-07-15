@@ -1,3 +1,4 @@
+---
 apiVersion: openchoreo.dev/v1alpha1
 kind: ResourceReleaseBinding
 metadata:
@@ -9,6 +10,7 @@ spec:
     resourceName: minio
   environment: development
   retainPolicy: Retain
+  resourceRelease: minio-5758654ffc
 ---
 apiVersion: openchoreo.dev/v1alpha1
 kind: ResourceReleaseBinding
@@ -21,6 +23,7 @@ spec:
     resourceName: rabbitmq
   environment: development
   retainPolicy: Retain
+  resourceRelease: rabbitmq-7cdfbf86f
 ---
 apiVersion: openchoreo.dev/v1alpha1
 kind: ResourceReleaseBinding
