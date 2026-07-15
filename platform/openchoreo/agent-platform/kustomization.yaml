@@ -5,3 +5,5 @@ resources:
   - environment-development.yaml
   - deployment-pipeline.yaml
   - project.yaml
+  - resources.yaml
+  - resource-bindings.yaml

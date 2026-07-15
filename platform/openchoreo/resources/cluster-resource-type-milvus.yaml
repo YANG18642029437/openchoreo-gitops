@@ -1,0 +1,103 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterResourceType
+metadata:
+  name: milvus
+  annotations:
+    openchoreo.dev/display-name: Milvus
+    openchoreo.dev/description: Standalone Milvus managed by the Milvus Operator
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      required:
+        - storageEndpoint
+        - storageSecretName
+      properties:
+        storageEndpoint:
+          type: string
+          minLength: 1
+        storageSecretName:
+          type: string
+          minLength: 1
+        bucketName:
+          type: string
+          default: milvus
+          minLength: 1
+        rootPath:
+          type: string
+          default: agent-platform
+          minLength: 1
+        storageClass:
+          type: string
+          default: local-path
+        etcdStorageGiB:
+          type: integer
+          default: 10
+          minimum: 10
+          maximum: 100
+        rocksmqStorageGiB:
+          type: integer
+          default: 10
+          minimum: 10
+          maximum: 100
+  retainPolicy: Retain
+  outputs:
+    - name: endpoint
+      value: "${applied.milvus.status.endpoint}"
+    - name: port
+      value: "19530"
+  resources:
+    - id: milvus
+      readyWhen: '${has(applied.milvus.status.status) && applied.milvus.status.status == "Healthy"}'
+      template:
+        apiVersion: milvus.io/v1beta1
+        kind: Milvus
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          mode: standalone
+          components:
+            image: milvusdb/milvus:v2.6.16
+            resources:
+              requests:
+                cpu: 500m
+                memory: 2Gi
+              limits:
+                cpu: "2"
+                memory: 4Gi
+          config:
+            minio:
+              bucketName: ${parameters.bucketName}
+              rootPath: ${parameters.rootPath}
+              useSSL: false
+          dependencies:
+            msgStreamType: rocksmq
+            rocksmq:
+              persistence:
+                enabled: true
+                pvcDeletion: false
+                persistentVolumeClaim:
+                  spec:
+                    accessModes:
+                      - ReadWriteOnce
+                    storageClassName: ${parameters.storageClass}
+                    resources:
+                      requests:
+                        storage: "${string(parameters.rocksmqStorageGiB) + 'Gi'}"
+            etcd:
+              inCluster:
+                deletionPolicy: Retain
+                pvcDeletion: false
+                values:
+                  replicaCount: 1
+                  persistence:
+                    enabled: true
+                    storageClass: ${parameters.storageClass}
+                    size: "${string(parameters.etcdStorageGiB) + 'Gi'}"
+            storage:
+              external: true
+              type: MinIO
+              endpoint: ${parameters.storageEndpoint}
+              secretRef: ${parameters.storageSecretName}

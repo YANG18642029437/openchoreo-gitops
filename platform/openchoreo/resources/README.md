@@ -1,8 +1,16 @@
-# OpenChoreo 1.1.2 environment boundary
+# OpenChoreo 1.1.2 资源边界
 
-This directory uses only APIs served by the installed OpenChoreo 1.1.2 control plane.
+本目录只使用当前 OpenChoreo 1.1.2 控制平面已经提供的 API。
 
-- `DeploymentPipeline` expresses the Development to Staging to Production promotion topology.
-- `Environment.spec.isProduction: true` marks Production. Version 1.1.2 has no declarative manual-approval or auto-promotion fields, so promotion remains an explicit release operation.
-- The data-plane controller creates the workload cell namespaces when a project is reconciled. Secrets remain namespace-scoped and are never copied into Git.
-- The installed release does not serve `ClusterProjectType`; namespace quotas, service accounts, and baseline NetworkPolicies must therefore be attached after cell namespace creation or after upgrading OpenChoreo to a release that supports project templates.
+- `DeploymentPipeline` 表达 Development → Staging → Production 的晋级拓扑。
+- `Environment.spec.isProduction: true` 标记生产环境。1.1.2 没有声明式人工审批或自动晋级字段，因此晋级仍是显式 Release 操作。
+- 数据平面控制器在 Project 协调后创建 workload cell Namespace。Secret 始终只存在于对应 Namespace，不复制到 Git。
+- 当前版本不提供 `ClusterProjectType`；Namespace 配额、ServiceAccount 和基础 NetworkPolicy 需要在 cell Namespace 创建后附加，或等升级到支持项目模板的版本再统一声明。
+
+## Agent Platform 资源类型
+
+- `minio`：OpenChoreo 直接渲染 ExternalSecret、Service、单副本 StatefulSet/PVC 和 Bucket 初始化 Job；持久卷使用 `nfs-shared`。
+- `rabbitmq`：OpenChoreo 渲染 `RabbitmqCluster`，实际生命周期由 RabbitMQ Cluster Operator 管理；开发环境固定单副本和 `local-path`。
+- `milvus`：OpenChoreo 渲染 standalone `Milvus`，实际生命周期由 Milvus Operator 管理；对象存储复用 MinIO，etcd 与 RocksMQ 使用 `local-path`。
+
+三个类型的持久化数据均使用 `Retain` 语义。ResourceType 只描述可复用能力，具体开发环境参数和 Release 固定状态位于 `../agent-platform/`。

@@ -1,0 +1,35 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: minio-development
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+    resourceName: minio
+  environment: development
+  retainPolicy: Retain
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: rabbitmq-development
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+    resourceName: rabbitmq
+  environment: development
+  retainPolicy: Retain
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: milvus-development
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+    resourceName: milvus
+  environment: development
+  retainPolicy: Retain

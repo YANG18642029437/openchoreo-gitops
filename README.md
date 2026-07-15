@@ -258,7 +258,9 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 | `environment-development.yaml` | 创建只绑定默认 ClusterDataPlane 的非生产 `development` Environment。 |
 | `deployment-pipeline.yaml` | 创建只有 development 起点且暂无晋级目标的 `development-only` DeploymentPipeline。 |
 | `project.yaml` | 创建使用 `development-only` Pipeline 的 `agent-platform` Project。 |
-| `kustomization.yaml` | 汇总 Agent Platform Namespace、Environment、DeploymentPipeline 和 Project。 |
+| `resources.yaml` | 申请 development 使用的共享 MinIO、单副本 RabbitMQ 和 standalone Milvus。 |
+| `resource-bindings.yaml` | 声明三个资源的 development 发布绑定；初次生成 Release 后把实际名称固定回 Git。 |
+| `kustomization.yaml` | 汇总 Agent Platform Namespace、Environment、DeploymentPipeline、Project、Resource 和 ResourceReleaseBinding。 |
 
 ##### `platform/openchoreo/data-plane-runtime/`
 
@@ -281,11 +283,14 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 |---|---|
 | `README.md` | 说明 OpenChoreo 1.1.2 环境边界和资源文件的应用顺序。 |
 | `cluster-resource-type-postgresql.yaml` | 把 Crossplane `XPostgreSQL` 暴露为 OpenChoreo `postgresql` ClusterResourceType。 |
+| `cluster-resource-type-minio.yaml` | 定义由 OpenChoreo 直接渲染的 MinIO、凭据同步和 Bucket 初始化资源合同。 |
+| `cluster-resource-type-rabbitmq.yaml` | 把 RabbitMQ Cluster Operator 暴露为单副本 `rabbitmq` ClusterResourceType。 |
+| `cluster-resource-type-milvus.yaml` | 把 Milvus Operator 与外部 MinIO 组合为 standalone `milvus` ClusterResourceType。 |
 | `deployment-pipeline.yaml` | 定义默认部署流水线及开发、预发布、生产环境的晋级顺序。 |
 | `environment-development.yaml` | 定义开发环境并绑定 Data Plane 和 Observability Plane。 |
 | `environment-production.yaml` | 定义生产环境并绑定 Data Plane 和 Observability Plane。 |
 | `environment-staging.yaml` | 定义预发布环境并绑定 Data Plane 和 Observability Plane。 |
-| `kustomization.yaml` | 汇总 PostgreSQL 资源类型、三个环境、部署流水线和默认项目。 |
+| `kustomization.yaml` | 汇总 PostgreSQL、MinIO、RabbitMQ、Milvus 资源类型，以及三个环境、部署流水线和默认项目。 |
 | `project.yaml` | 创建 OpenChoreo 默认 Project，作为组件和资源的逻辑边界。 |
 
 ##### `platform/openchoreo/workflow-runtime/`
@@ -342,6 +347,7 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 | `agent-platform-foundation.sh` | 聚合 Agent Platform Operator、RBAC、控制面、渲染和凭据特征检查。 |
 | `agent-platform-operators.sh` | 检查 RabbitMQ/Milvus Operator 的官方来源、固定版本和 App-of-Apps 注册。 |
 | `agent-platform-rbac.sh` | 检查 OpenChoreo Data Plane 的 RabbitMQ/Milvus CR 最小权限，并执行 Server-Side Dry Run。 |
+| `agent-platform-resources.sh` | 检查 MinIO、RabbitMQ、Milvus ResourceType、Resource、Binding 合同，并执行 Server-Side Dry Run。 |
 | `control-plane.sh` | 渲染并检查 Control Plane Helm 配置、Secret 引用、OIDC 和 IP 来源白名单契约。 |
 | `crossplane-install.sh` | 检查 Crossplane Helm 安装清单、版本、双副本和 Argo CD Application 配置。 |
 | `crossplane.sh` | 检查 PostgreSQL XRD、Composition、Function、RBAC 和示例规格，并通过 Kubernetes Server Dry Run 验证渲染结果。 |

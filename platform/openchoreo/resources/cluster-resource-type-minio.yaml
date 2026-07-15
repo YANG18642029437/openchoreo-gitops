@@ -1,0 +1,187 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterResourceType
+metadata:
+  name: minio
+  annotations:
+    openchoreo.dev/display-name: MinIO
+    openchoreo.dev/description: Shared object storage backed by a retained persistent volume
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      required:
+        - secretPath
+      properties:
+        secretPath:
+          type: string
+          minLength: 1
+        storageClass:
+          type: string
+          default: nfs-shared
+        storageGiB:
+          type: integer
+          default: 20
+          minimum: 10
+          maximum: 200
+  retainPolicy: Retain
+  outputs:
+    - name: host
+      value: "${metadata.resourceName}.${metadata.namespace}.svc.cluster.local"
+    - name: port
+      value: "9000"
+    - name: secretName
+      value: "${metadata.resourceName}-creds"
+    - name: accessKey
+      secretKeyRef:
+        name: "${metadata.resourceName}-creds"
+        key: accesskey
+    - name: secretKey
+      secretKeyRef:
+        name: "${metadata.resourceName}-creds"
+        key: secretkey
+  resources:
+    - id: credentials
+      readyWhen: '${has(applied.credentials.status.conditions) && applied.credentials.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}'
+      template:
+        apiVersion: external-secrets.io/v1
+        kind: ExternalSecret
+        metadata:
+          name: ${metadata.resourceName}-creds
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          secretStoreRef:
+            kind: ClusterSecretStore
+            name: openbao
+          target:
+            name: ${metadata.resourceName}-creds
+            creationPolicy: Owner
+            template:
+              type: Opaque
+              data:
+                MINIO_ROOT_USER: "{{ .root_user }}"
+                MINIO_ROOT_PASSWORD: "{{ .root_password }}"
+                accesskey: "{{ .root_user }}"
+                secretkey: "{{ .root_password }}"
+          data:
+            - secretKey: root_user
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: root_user
+            - secretKey: root_password
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: root_password
+    - id: service
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          selector:
+            app.kubernetes.io/name: ${metadata.resourceName}
+          ports:
+            - name: api
+              port: 9000
+              targetPort: api
+            - name: console
+              port: 9001
+              targetPort: console
+    - id: minio
+      readyWhen: '${has(applied.minio.status.readyReplicas) && applied.minio.status.readyReplicas == 1}'
+      template:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          serviceName: ${metadata.resourceName}
+          replicas: 1
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${metadata.resourceName}
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${metadata.resourceName}
+            spec:
+              containers:
+                - name: minio
+                  image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+                  args:
+                    - server
+                    - /data
+                    - --console-address
+                    - :9001
+                  envFrom:
+                    - secretRef:
+                        name: ${metadata.resourceName}-creds
+                  ports:
+                    - name: api
+                      containerPort: 9000
+                    - name: console
+                      containerPort: 9001
+                  readinessProbe:
+                    httpGet:
+                      path: /minio/health/ready
+                      port: api
+                  livenessProbe:
+                    httpGet:
+                      path: /minio/health/live
+                      port: api
+                  resources:
+                    requests:
+                      cpu: 250m
+                      memory: 512Mi
+                    limits:
+                      cpu: "1"
+                      memory: 2Gi
+                  volumeMounts:
+                    - name: data
+                      mountPath: /data
+          volumeClaimTemplates:
+            - metadata:
+                name: data
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                storageClassName: ${parameters.storageClass}
+                resources:
+                  requests:
+                    storage: "${string(parameters.storageGiB) + 'Gi'}"
+    - id: buckets
+      readyWhen: '${has(applied.buckets.status.succeeded) && applied.buckets.status.succeeded > 0}'
+      template:
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: ${metadata.name}-buckets
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          backoffLimit: 12
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${metadata.resourceName}-buckets
+            spec:
+              restartPolicy: OnFailure
+              containers:
+                - name: create-buckets
+                  image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+                  command:
+                    - /bin/sh
+                    - -ec
+                  args:
+                    - |
+                      until mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"; do sleep 2; done
+                      mc mb --ignore-existing local/milvus
+                      mc mb --ignore-existing local/knowledge-base
+                  envFrom:
+                    - secretRef:
+                        name: ${metadata.resourceName}-creds

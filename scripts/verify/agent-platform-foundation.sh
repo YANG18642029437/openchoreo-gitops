@@ -7,6 +7,7 @@ cd "$repo_root"
 bash scripts/verify/agent-platform-operators.sh
 bash scripts/verify/agent-platform-rbac.sh
 bash scripts/verify/agent-platform-control-plane.sh
+bash scripts/verify/agent-platform-resources.sh
 bash scripts/verify/render.sh
 
 credential_pattern="-----BEGIN ([A-Z0-9 ]+ )?PRIVATE KEY-----|^[[:space:]]*(password|token|api[_-]?key|secret):[[:space:]]*[\"']?[A-Za-z0-9+/_.@-]{8,}"

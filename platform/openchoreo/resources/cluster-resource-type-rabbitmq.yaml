@@ -1,0 +1,64 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterResourceType
+metadata:
+  name: rabbitmq
+  annotations:
+    openchoreo.dev/display-name: RabbitMQ
+    openchoreo.dev/description: Single-replica RabbitMQ managed by the RabbitMQ Cluster Operator
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      properties:
+        replicas:
+          type: integer
+          default: 1
+          minimum: 1
+          maximum: 1
+        storageClass:
+          type: string
+          default: local-path
+        storageGiB:
+          type: integer
+          default: 10
+          minimum: 10
+          maximum: 100
+  retainPolicy: Retain
+  outputs:
+    - name: host
+      value: "${applied.rabbitmq.status.defaultUser.serviceReference.name}.${metadata.namespace}.svc.cluster.local"
+    - name: port
+      value: "5672"
+    - name: secretName
+      value: "${applied.rabbitmq.status.defaultUser.secretReference.name}"
+    - name: username
+      secretKeyRef:
+        name: "${applied.rabbitmq.status.defaultUser.secretReference.name}"
+        key: "${applied.rabbitmq.status.defaultUser.secretReference.keys.username}"
+    - name: password
+      secretKeyRef:
+        name: "${applied.rabbitmq.status.defaultUser.secretReference.name}"
+        key: "${applied.rabbitmq.status.defaultUser.secretReference.keys.password}"
+  resources:
+    - id: rabbitmq
+      readyWhen: '${has(applied.rabbitmq.status.conditions) && applied.rabbitmq.status.conditions.exists(c, c.type == "AllReplicasReady" && c.status == "True") && applied.rabbitmq.status.conditions.exists(c, c.type == "ClusterAvailable" && c.status == "True")}'
+      template:
+        apiVersion: rabbitmq.com/v1beta1
+        kind: RabbitmqCluster
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          replicas: ${parameters.replicas}
+          image: rabbitmq:4.2.6-management
+          persistence:
+            storageClassName: ${parameters.storageClass}
+            storage: "${string(parameters.storageGiB) + 'Gi'}"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi

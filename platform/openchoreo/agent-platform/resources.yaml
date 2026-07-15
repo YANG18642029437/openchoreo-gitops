@@ -1,0 +1,51 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: minio
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+  type:
+    kind: ClusterResourceType
+    name: minio
+  parameters:
+    secretPath: agent-platform/development/minio
+    storageClass: nfs-shared
+    storageGiB: 20
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: rabbitmq
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+  type:
+    kind: ClusterResourceType
+    name: rabbitmq
+  parameters:
+    replicas: 1
+    storageClass: local-path
+    storageGiB: 10
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: milvus
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+  type:
+    kind: ClusterResourceType
+    name: milvus
+  parameters:
+    storageEndpoint: minio:9000
+    storageSecretName: minio-creds
+    bucketName: milvus
+    rootPath: agent-platform
+    storageClass: local-path
+    etcdStorageGiB: 10
+    rocksmqStorageGiB: 10
