@@ -49,3 +49,35 @@ spec:
     storageClass: local-path
     etcdStorageGiB: 10
     rocksmqStorageGiB: 10
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: postgresql
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+  type:
+    kind: ClusterResourceType
+    name: postgresql
+  parameters:
+    databaseName: agent_platform
+    instances: 1
+    storageGiB: 10
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: redis
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+  type:
+    kind: ClusterResourceType
+    name: redis
+  parameters:
+    secretPath: agent-platform/development/redis
+    storageClass: local-path
+    storageGiB: 10

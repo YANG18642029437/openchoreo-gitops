@@ -24,7 +24,7 @@ spec:
           type: integer
           minimum: 10
           maximum: 100
-  retainPolicy: Delete
+  retainPolicy: Retain
   outputs:
     - name: host
       value: "${applied.postgresql.status.host}"

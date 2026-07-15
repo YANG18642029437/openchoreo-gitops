@@ -5,6 +5,7 @@ resources:
   - cluster-resource-type-minio.yaml
   - cluster-resource-type-rabbitmq.yaml
   - cluster-resource-type-milvus.yaml
+  - cluster-resource-type-redis.yaml
   - environment-development.yaml
   - environment-staging.yaml
   - environment-production.yaml

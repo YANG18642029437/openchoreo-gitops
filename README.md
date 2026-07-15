@@ -258,8 +258,8 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 | `environment-development.yaml` | 创建只绑定默认 ClusterDataPlane 的非生产 `development` Environment。 |
 | `deployment-pipeline.yaml` | 创建只有 development 起点且暂无晋级目标的 `development-only` DeploymentPipeline。 |
 | `project.yaml` | 创建使用 `development-only` Pipeline 的 `agent-platform` Project。 |
-| `resources.yaml` | 申请 development 使用的共享 MinIO、单副本 RabbitMQ 和 standalone Milvus。 |
-| `resource-bindings.yaml` | 声明三个资源的 development 发布绑定；初次生成 Release 后把实际名称固定回 Git。 |
+| `resources.yaml` | 申请 development 使用的 PostgreSQL、Redis、MinIO、单副本 RabbitMQ 和 standalone Milvus。 |
+| `resource-bindings.yaml` | 声明五个资源的 development 发布绑定；初次生成 Release 后把实际名称固定回 Git。 |
 | `kustomization.yaml` | 汇总 Agent Platform Namespace、Environment、DeploymentPipeline、Project、Resource 和 ResourceReleaseBinding。 |
 
 ##### `platform/openchoreo/data-plane-runtime/`
@@ -286,11 +286,12 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 | `cluster-resource-type-minio.yaml` | 定义由 OpenChoreo 直接渲染的 MinIO、凭据同步和 Bucket 初始化资源合同。 |
 | `cluster-resource-type-rabbitmq.yaml` | 把 RabbitMQ Cluster Operator 暴露为单副本 `rabbitmq` ClusterResourceType。 |
 | `cluster-resource-type-milvus.yaml` | 把 Milvus Operator 与外部 MinIO 组合为 standalone `milvus` ClusterResourceType。 |
+| `cluster-resource-type-redis.yaml` | 定义带 OpenBao 密码、AOF 和持久卷的单实例 `redis` ClusterResourceType。 |
 | `deployment-pipeline.yaml` | 定义默认部署流水线及开发、预发布、生产环境的晋级顺序。 |
 | `environment-development.yaml` | 定义开发环境并绑定 Data Plane 和 Observability Plane。 |
 | `environment-production.yaml` | 定义生产环境并绑定 Data Plane 和 Observability Plane。 |
 | `environment-staging.yaml` | 定义预发布环境并绑定 Data Plane 和 Observability Plane。 |
-| `kustomization.yaml` | 汇总 PostgreSQL、MinIO、RabbitMQ、Milvus 资源类型，以及三个环境、部署流水线和默认项目。 |
+| `kustomization.yaml` | 汇总 PostgreSQL、Redis、MinIO、RabbitMQ、Milvus 资源类型，以及三个环境、部署流水线和默认项目。 |
 | `project.yaml` | 创建 OpenChoreo 默认 Project，作为组件和资源的逻辑边界。 |
 
 ##### `platform/openchoreo/workflow-runtime/`

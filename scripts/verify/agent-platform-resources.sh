@@ -7,9 +7,11 @@ cd "$repo_root"
 types_base=platform/openchoreo/resources
 project_base=platform/openchoreo/agent-platform
 required=(
+  "$types_base/cluster-resource-type-postgresql.yaml"
   "$types_base/cluster-resource-type-minio.yaml"
   "$types_base/cluster-resource-type-rabbitmq.yaml"
   "$types_base/cluster-resource-type-milvus.yaml"
+  "$types_base/cluster-resource-type-redis.yaml"
   "$project_base/resources.yaml"
   "$project_base/resource-bindings.yaml"
 )
@@ -21,6 +23,7 @@ for file in "${required[@]}"; do
   }
 done
 
+grep -Fq 'retainPolicy: Retain' "$types_base/cluster-resource-type-postgresql.yaml"
 grep -Fq 'name: minio' "$types_base/cluster-resource-type-minio.yaml"
 grep -Fq 'quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z' "$types_base/cluster-resource-type-minio.yaml"
 grep -Fq 'quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z' "$types_base/cluster-resource-type-minio.yaml"
@@ -43,9 +46,17 @@ if grep -Fq 'storageEndpoint: minio:9000' "$project_base/resources.yaml"; then
   printf 'Milvus storage endpoint must be expanded to a cross-namespace FQDN\n' >&2
   exit 1
 fi
-test "$(grep -c '^kind: Resource$' "$project_base/resources.yaml")" -eq 3
-test "$(grep -c '^kind: ResourceReleaseBinding$' "$project_base/resource-bindings.yaml")" -eq 3
-test "$(grep -c 'retainPolicy: Retain' "$project_base/resource-bindings.yaml")" -eq 3
+grep -Fq 'redis:8.2.7-alpine' "$types_base/cluster-resource-type-redis.yaml"
+grep -Fq 'kind: ExternalSecret' "$types_base/cluster-resource-type-redis.yaml"
+grep -Fq 'appendonly yes' "$types_base/cluster-resource-type-redis.yaml"
+grep -Fq 'name: REDISCLI_AUTH' "$types_base/cluster-resource-type-redis.yaml"
+grep -Fq 'redis-cli ping' "$types_base/cluster-resource-type-redis.yaml"
+grep -Fq 'secretPath: agent-platform/development/redis' "$project_base/resources.yaml"
+grep -Fq 'databaseName: agent_platform' "$project_base/resources.yaml"
+test "$(grep -c '^kind: Resource$' "$project_base/resources.yaml")" -eq 5
+binding_count="$(grep -c '^kind: ResourceReleaseBinding$' "$project_base/resource-bindings.yaml")"
+test "$binding_count" -ge 3
+test "$(grep -c 'retainPolicy: Retain' "$project_base/resource-bindings.yaml")" -eq "$binding_count"
 
 rendered="$(mktemp "${TMPDIR:-/tmp}/agent-platform-resources.XXXXXX")"
 trap 'rm -f "$rendered"' EXIT
