@@ -23,7 +23,7 @@ spec:
     resourceName: rabbitmq
   environment: development
   retainPolicy: Retain
-  resourceRelease: rabbitmq-7cdfbf86f
+  resourceRelease: rabbitmq-5f96bbf5dc
 ---
 apiVersion: openchoreo.dev/v1alpha1
 kind: ResourceReleaseBinding
