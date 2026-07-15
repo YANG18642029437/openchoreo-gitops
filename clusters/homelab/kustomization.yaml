@@ -30,6 +30,7 @@ resources:
   - applications/22-milvus-operator.yaml
   - applications/23-platform-apis.yaml
   - applications/24-environments.yaml
+  - applications/24-agent-platform.yaml
   - applications/25-openchoreo-capabilities.yaml
   - applications/26-smoke-app.yaml
   - applications/27-ip-access.yaml

@@ -1,0 +1,16 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: DeploymentPipeline
+metadata:
+  name: development-only
+  namespace: agent-platform
+  annotations:
+    openchoreo.dev/display-name: Agent Platform Development Only
+    openchoreo.dev/description: Single-environment development pipeline
+  labels:
+    openchoreo.dev/name: development-only
+spec:
+  promotionPaths:
+    - sourceEnvironmentRef:
+        kind: Environment
+        name: development
+      targetEnvironmentRefs: []

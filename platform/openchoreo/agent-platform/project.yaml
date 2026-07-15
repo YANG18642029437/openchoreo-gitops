@@ -1,0 +1,14 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: agent-platform
+  namespace: agent-platform
+  annotations:
+    openchoreo.dev/display-name: Agent Platform
+    openchoreo.dev/description: Enterprise RAG, Agent and MCP platform
+  labels:
+    openchoreo.dev/name: agent-platform
+spec:
+  deploymentPipelineRef:
+    kind: DeploymentPipeline
+    name: development-only
