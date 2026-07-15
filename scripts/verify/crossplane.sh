@@ -57,6 +57,7 @@ grep -q 'production: "3"' "$composition"
 grep -q 'development: 10Gi' "$composition"
 grep -q 'staging: 20Gi' "$composition"
 grep -q 'production: 50Gi' "$composition"
+grep -A12 'fromFieldPath: spec.parameters.storageGiB' "$composition" | grep -q 'toType: int'
 grep -q 'bootstrap.initdb.database' "$composition" || grep -q 'toFieldPath: spec.bootstrap.initdb.database' "$composition"
 grep -q 'toFieldPath: status.ready' "$composition"
 grep -q 'fromFieldPath: status.readyInstances' "$composition"

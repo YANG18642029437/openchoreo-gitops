@@ -70,6 +70,9 @@ spec:
                 policy:
                   fromFieldPath: Optional
                 transforms:
+                  - type: convert
+                    convert:
+                      toType: int
                   - type: string
                     string:
                       type: Format
