@@ -26,22 +26,21 @@ spec:
   retainPolicy: Retain
   outputs:
     - name: host
-      value: "${applied.rabbitmq.status.defaultUser.serviceReference.name}.${metadata.namespace}.svc.cluster.local"
+      value: "${metadata.resourceName}.${metadata.namespace}.svc.cluster.local"
     - name: port
       value: "5672"
     - name: secretName
-      value: "${applied.rabbitmq.status.defaultUser.secretReference.name}"
+      value: "${metadata.resourceName}-default-user"
     - name: username
       secretKeyRef:
-        name: "${applied.rabbitmq.status.defaultUser.secretReference.name}"
-        key: "${applied.rabbitmq.status.defaultUser.secretReference.keys.username}"
+        name: "${metadata.resourceName}-default-user"
+        key: username
     - name: password
       secretKeyRef:
-        name: "${applied.rabbitmq.status.defaultUser.secretReference.name}"
-        key: "${applied.rabbitmq.status.defaultUser.secretReference.keys.password}"
+        name: "${metadata.resourceName}-default-user"
+        key: password
   resources:
     - id: rabbitmq
-      readyWhen: '${has(applied.rabbitmq.status.conditions) && applied.rabbitmq.status.conditions.exists(c, c.type == "AllReplicasReady" && c.status == "True") && applied.rabbitmq.status.conditions.exists(c, c.type == "ClusterAvailable" && c.status == "True")}'
       template:
         apiVersion: rabbitmq.com/v1beta1
         kind: RabbitmqCluster
@@ -62,3 +61,30 @@ spec:
             limits:
               cpu: "1"
               memory: 2Gi
+    - id: readiness
+      readyWhen: '${has(applied.readiness.status.succeeded) && applied.readiness.status.succeeded > 0}'
+      template:
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: ${metadata.name}-ready
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          activeDeadlineSeconds: 600
+          backoffLimit: 1
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${metadata.resourceName}-ready
+            spec:
+              restartPolicy: OnFailure
+              containers:
+                - name: check-amqp
+                  image: rabbitmq:4.2.6-management
+                  command:
+                    - /bin/bash
+                    - -ec
+                  args:
+                    - |
+                      until timeout 2 bash -c "</dev/tcp/${metadata.resourceName}/5672"; do sleep 2; done
