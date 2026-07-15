@@ -99,5 +99,5 @@ spec:
             storage:
               external: true
               type: MinIO
-              endpoint: ${parameters.storageEndpoint}
+              endpoint: "${parameters.storageEndpoint}.${metadata.namespace}.svc.cluster.local:9000"
               secretRef: ${parameters.storageSecretName}

@@ -42,7 +42,7 @@ spec:
     kind: ClusterResourceType
     name: milvus
   parameters:
-    storageEndpoint: minio:9000
+    storageEndpoint: minio
     storageSecretName: minio-creds
     bucketName: milvus
     rootPath: agent-platform
