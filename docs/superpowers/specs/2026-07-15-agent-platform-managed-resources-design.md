@@ -125,11 +125,15 @@ MinIO ResourceReleaseBinding 只有同时满足以下条件才 Ready：
 - 元数据存储：Milvus Operator 管理的单副本 etcd
 - etcd 存储：`local-path`、`10Gi`
 - 对象存储：外部 MinIO
-- MinIO Endpoint：`minio:9000`
+- MinIO Endpoint：`minio.<数据面 namespace>.svc.cluster.local:9000`
 - MinIO Secret：`minio-creds`
 - Bucket：`milvus`
 - Root Path：`agent-platform`
 - TLS：集群内开发连接暂不启用
+
+Milvus Pod 显式设置 `MINIO_PORT=9000`。这是为了避免 Kubernetes Service Links 自动注入的
+`MINIO_PORT=tcp://<ClusterIP>:9000` 覆盖 Milvus 的同名配置键，导致 MinIO SDK 把 endpoint
+解析为带路径的非法 URL。跨 namespace FQDN 仍同时供 Milvus Operator 和数据面工作负载访问。
 
 Milvus ResourceReleaseBinding 只在 MinIO Binding 已 Ready 后固定发布。Milvus 就绪条件要求 `status.status` 为 `Healthy`，并输出 Operator 报告的 Endpoint 与标准端口 `19530`。
 

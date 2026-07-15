@@ -36,6 +36,8 @@ grep -Fq 'id: readiness' "$types_base/cluster-resource-type-rabbitmq.yaml"
 grep -Fq 'bash -c "</dev/tcp/${metadata.resourceName}/5672"' "$types_base/cluster-resource-type-rabbitmq.yaml"
 grep -Fq 'milvusdb/milvus:v2.6.16' "$types_base/cluster-resource-type-milvus.yaml"
 grep -Fq 'endpoint: "${parameters.storageEndpoint}.${metadata.namespace}.svc.cluster.local:9000"' "$types_base/cluster-resource-type-milvus.yaml"
+grep -Fq 'name: MINIO_PORT' "$types_base/cluster-resource-type-milvus.yaml"
+grep -Fq 'value: "9000"' "$types_base/cluster-resource-type-milvus.yaml"
 grep -Fq 'storageEndpoint: minio' "$project_base/resources.yaml"
 if grep -Fq 'storageEndpoint: minio:9000' "$project_base/resources.yaml"; then
   printf 'Milvus storage endpoint must be expanded to a cross-namespace FQDN\n' >&2

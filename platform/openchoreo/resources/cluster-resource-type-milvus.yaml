@@ -60,6 +60,9 @@ spec:
           mode: standalone
           components:
             image: milvusdb/milvus:v2.6.16
+            env:
+              - name: MINIO_PORT
+                value: "9000"
             resources:
               requests:
                 cpu: 500m
