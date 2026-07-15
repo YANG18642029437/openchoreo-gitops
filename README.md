@@ -368,6 +368,7 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 | `docs/access/ip-port-web-access.md` | IP+端口管理平台访问手册，包含地址、前提、自动验收、排障、回滚和限制。 |
 | `docs/superpowers/plans/2026-07-13-ip-port-web-access.md` | IP 访问入口的分任务实施计划和验收步骤，作为变更历史保留。 |
 | `docs/superpowers/specs/2026-07-13-ip-port-web-access-design.md` | IP 访问入口的目标、架构、端口、路由、安全边界和回滚设计。 |
+| `docs/superpowers/specs/2026-07-15-agent-platform-managed-resources-design.md` | Agent Platform 开发环境 MinIO、RabbitMQ、Milvus 的 OpenChoreo 资源、凭据、发布顺序和验收设计。 |
 
 ### `flux/`：官方 Flux CD 保留示例
 
