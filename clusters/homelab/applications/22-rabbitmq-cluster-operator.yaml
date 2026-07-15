@@ -13,7 +13,7 @@ spec:
     path: config/installation
     kustomize:
       images:
-        - ghcr.io/rabbitmq/cluster-operator:v2.22.2
+        - ghcr.io/rabbitmq/cluster-operator:2.22.2
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system

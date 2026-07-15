@@ -17,7 +17,15 @@ done
 /usr/bin/grep -Fq 'repoURL: https://github.com/rabbitmq/cluster-operator.git' "$rabbit_app"
 /usr/bin/grep -Fq 'targetRevision: v2.22.2' "$rabbit_app"
 /usr/bin/grep -Fq 'path: config/installation' "$rabbit_app"
-/usr/bin/grep -Fq 'ghcr.io/rabbitmq/cluster-operator:v2.22.2' "$rabbit_app"
+expected_rabbit_image='ghcr.io/rabbitmq/cluster-operator:2.22.2'
+/usr/bin/grep -Fq "$expected_rabbit_image" "$rabbit_app" || {
+  printf 'RabbitMQ Operator image must use published tag: %s\n' "$expected_rabbit_image" >&2
+  exit 1
+}
+if /usr/bin/grep -Fq 'ghcr.io/rabbitmq/cluster-operator:v2.22.2' "$rabbit_app"; then
+  printf 'RabbitMQ Operator image must not use the missing v2.22.2 tag\n' >&2
+  exit 1
+fi
 /usr/bin/grep -Fq 'namespace: rabbitmq-system' "$rabbit_app"
 
 /usr/bin/grep -Fq 'repoURL: https://zilliztech.github.io/milvus-operator/' "$milvus_app"
