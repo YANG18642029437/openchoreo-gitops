@@ -247,7 +247,7 @@ spec:
                       until pg_isready -h "$PGHOST" -p 5432 -U "$PGUSER"; do sleep 3; done
                       escaped_password="$(printf '%s' "$LANGFUSE_POSTGRES_PASSWORD" | sed "s/'/''/g")"
                       umask 077
-                      printf "DO \\\$\\\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'langfuse') THEN CREATE ROLE langfuse LOGIN PASSWORD '%s'; ELSE ALTER ROLE langfuse PASSWORD '%s'; END IF; END \\\$\\\$;\n" "$escaped_password" "$escaped_password" >/tmp/langfuse-role.sql
+                      printf "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'langfuse') THEN CREATE ROLE langfuse LOGIN PASSWORD '%s'; ELSE ALTER ROLE langfuse PASSWORD '%s'; END IF; END \$\$;\n" "$escaped_password" "$escaped_password" >/tmp/langfuse-role.sql
                       psql -v ON_ERROR_STOP=1 -d postgres -f /tmp/langfuse-role.sql >/dev/null
                       rm -f /tmp/langfuse-role.sql
                       if ! psql -Atqc "SELECT 1 FROM pg_database WHERE datname = 'langfuse'" -d postgres | grep -q 1; then
