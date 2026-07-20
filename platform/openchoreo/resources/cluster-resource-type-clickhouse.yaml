@@ -58,6 +58,7 @@ spec:
           namespace: ${metadata.namespace}
           labels: ${metadata.labels}
         spec:
+          refreshInterval: 1h
           secretStoreRef:
             kind: ClusterSecretStore
             name: openbao
