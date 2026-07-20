@@ -49,7 +49,7 @@ spec:
         key: password
   resources:
     - id: credentials
-      readyWhen: '${has(applied.credentials.status.conditions) && applied.credentials.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}'
+      readyWhen: '${has(applied.credentials.status.conditions) && applied.credentials.status.conditions.exists(c, c.type == "Ready" && c.status == "True" && c.reason == "SecretSynced")}'
       template:
         apiVersion: external-secrets.io/v1
         kind: ExternalSecret
