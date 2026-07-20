@@ -20,3 +20,5 @@
 七个类型的持久化数据均使用 `Retain` 语义。ResourceType 只描述可复用能力，具体开发环境参数和 Release 固定状态位于 `../agent-platform/`。
 
 PostgreSQL Cluster 显式生成受控 superuser Secret，仅供 Langfuse bootstrap Job 幂等创建独立 role/database；应用 Pod 不读取该 Secret。MinIO 现有 RAG bucket 与 root 凭据保持不变，Langfuse bootstrap 创建专用用户，并只授权 `langfuse-events`、`langfuse-media`、`langfuse-exports`。Chart 基线和验证入口位于 `tests/langfuse-chart-1.5.39-values.yaml`、`tests/verify-langfuse-chart-baseline.sh`，只包含虚构 Secret 引用。
+
+Langfuse Core 不包含开源数据保留功能，因此 `../agent-platform/resource-type-langfuse-retention.yaml` 通过 Public API 每天清理 UTC 7 天前的 Trace。任务固定每批最多 30 条、单并发和运行预算；checkpoint 仅保存 cutoff、页码、删除计数、状态和 HTTP 错误码，不保存 Trace 内容。其 ServiceAccount 只能读写自己的 checkpoint ConfigMap。

@@ -1,0 +1,426 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceType
+metadata:
+  name: langfuse-retention
+  namespace: agent-platform
+  annotations:
+    openchoreo.dev/display-name: Langfuse 7-day retention
+    openchoreo.dev/description: Idempotent API-based trace cleanup for Langfuse Core
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      properties:
+        schedule:
+          type: string
+          default: "17 2 * * *"
+        retentionDays:
+          type: integer
+          default: 7
+          enum:
+            - 7
+        batchSize:
+          type: integer
+          default: 30
+          minimum: 1
+          maximum: 30
+        maxRuntimeSeconds:
+          type: integer
+          default: 600
+          minimum: 60
+          maximum: 1800
+        langfuseServiceName:
+          type: string
+          default: langfuse
+        langfuseSecretName:
+          type: string
+          default: langfuse-creds
+  retainPolicy: Retain
+  resources:
+    - id: script
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ${metadata.resourceName}-script
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        data:
+          retention.py: |
+            """通过 Langfuse Public API 幂等清理超过保留期的 Trace。"""
+
+            from __future__ import annotations
+
+            import base64
+            from datetime import datetime, timedelta, timezone
+            import json
+            import os
+            from pathlib import Path
+            import ssl
+            import time
+            from typing import Callable, Protocol
+            from urllib.error import HTTPError
+            from urllib.parse import urlencode, quote
+            from urllib.request import Request, urlopen
+
+
+            class RetentionHttpError(RuntimeError):
+                """表示必须停止本轮清理的稳定 HTTP 错误。"""
+
+                def __init__(self, status: int) -> None:
+                    super().__init__(f"Langfuse retention HTTP status {status}")
+                    self.status = status
+
+
+            class CheckpointStore(Protocol):
+                """定义不保存 Trace 内容的最小 checkpoint 接口。"""
+
+                def load(self) -> dict[str, object] | None:
+                    """读取上次未完成状态。"""
+
+                def save(self, state: dict[str, object]) -> None:
+                    """保存 cutoff、页码、计数和稳定错误码。"""
+
+
+            def compute_cutoff(now: datetime, retention_days: int) -> str:
+                """按 UTC 计算严格的保留期截止时间。"""
+
+                utc_now = now.astimezone(timezone.utc).replace(microsecond=0)
+                return (utc_now - timedelta(days=retention_days)).isoformat().replace("+00:00", "Z")
+
+
+            class KubernetesConfigMapCheckpointStore:
+                """只读写当前 Namespace 内指定 checkpoint ConfigMap。"""
+
+                def __init__(self, configmap_name: str) -> None:
+                    host = os.environ["KUBERNETES_SERVICE_HOST"]
+                    port = os.environ.get("KUBERNETES_SERVICE_PORT_HTTPS", "443")
+                    namespace = Path(
+                        "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+                    ).read_text(encoding="utf-8").strip()
+                    self.url = (
+                        f"https://{host}:{port}/api/v1/namespaces/"
+                        f"{quote(namespace, safe='')}/configmaps/{quote(configmap_name, safe='')}"
+                    )
+                    token = Path(
+                        "/var/run/secrets/kubernetes.io/serviceaccount/token"
+                    ).read_text(encoding="utf-8").strip()
+                    self.headers = {"Authorization": f"Bearer {token}"}
+                    self.context = ssl.create_default_context(
+                        cafile="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+                    )
+
+                def load(self) -> dict[str, object] | None:
+                    """读取 ConfigMap 中的 state.json；空值视为首次运行。"""
+
+                    request = Request(self.url, headers=self.headers)
+                    with urlopen(request, timeout=10, context=self.context) as response:
+                        payload = json.load(response)
+                    raw = payload.get("data", {}).get("state.json", "")
+                    return json.loads(raw) if raw else None
+
+                def save(self, state: dict[str, object]) -> None:
+                    """使用 merge patch 原子更新唯一 checkpoint 字段。"""
+
+                    body = json.dumps(
+                        {"data": {"state.json": json.dumps(state, separators=(",", ":"))}}
+                    ).encode()
+                    headers = {
+                        **self.headers,
+                        "Content-Type": "application/merge-patch+json",
+                    }
+                    request = Request(self.url, data=body, headers=headers, method="PATCH")
+                    with urlopen(request, timeout=10, context=self.context):
+                        return
+
+
+            class RetentionRunner:
+                """分页查询旧 Trace，并在预算内逐个提交异步删除。"""
+
+                def __init__(
+                    self,
+                    *,
+                    base_url: str,
+                    public_key: str,
+                    secret_key: str,
+                    retention_days: int,
+                    batch_size: int,
+                    max_runtime_seconds: int,
+                    checkpoint_store: CheckpointStore,
+                    now: Callable[[], datetime] | None = None,
+                    monotonic: Callable[[], float] = time.monotonic,
+                ) -> None:
+                    self.base_url = base_url.rstrip("/")
+                    token = base64.b64encode(f"{public_key}:{secret_key}".encode()).decode()
+                    self.headers = {
+                        "Authorization": f"Basic {token}",
+                        "Accept": "application/json",
+                    }
+                    self.retention_days = retention_days
+                    self.batch_size = min(batch_size, 30)
+                    self.max_runtime_seconds = max_runtime_seconds
+                    self.checkpoint_store = checkpoint_store
+                    self.now = now or (lambda: datetime.now(timezone.utc))
+                    self.monotonic = monotonic
+
+                def _request_json(self, path: str) -> dict[str, object]:
+                    """执行只返回 JSON 的 GET，并统一稳定错误类型。"""
+
+                    try:
+                        with urlopen(
+                            Request(f"{self.base_url}{path}", headers=self.headers), timeout=30
+                        ) as response:
+                            return json.load(response)
+                    except HTTPError as error:
+                        status = error.code
+                        error.close()
+                        raise RetentionHttpError(status) from None
+
+                def _delete_trace(self, trace_id: str) -> None:
+                    """删除单个 Trace；404 表示目标已不存在，按幂等成功处理。"""
+
+                    path = f"/api/public/traces/{quote(trace_id, safe='')}"
+                    try:
+                        with urlopen(
+                            Request(
+                                f"{self.base_url}{path}",
+                                headers=self.headers,
+                                method="DELETE",
+                            ),
+                            timeout=30,
+                        ):
+                            return
+                    except HTTPError as error:
+                        if error.code == 404:
+                            error.close()
+                            return
+                        status = error.code
+                        error.close()
+                        raise RetentionHttpError(status) from None
+
+                def _initial_state(self) -> dict[str, object]:
+                    """失败或部分运行从 checkpoint 续跑，已完成运行创建新 cutoff。"""
+
+                    existing = self.checkpoint_store.load()
+                    if existing and existing.get("status") in {"failed", "partial", "running"}:
+                        return {
+                            "cutoff": str(existing["cutoff"]),
+                            "page": int(existing.get("page", 1)),
+                            "deleted": int(existing.get("deleted", 0)),
+                            "status": "running",
+                            "last_error_code": None,
+                        }
+                    return {
+                        "cutoff": compute_cutoff(self.now(), self.retention_days),
+                        "page": 1,
+                        "deleted": 0,
+                        "status": "running",
+                        "last_error_code": None,
+                    }
+
+                def run(self) -> dict[str, object]:
+                    """执行一轮有界清理；预算耗尽时保存下一页并正常退出。"""
+
+                    started = self.monotonic()
+                    state = self._initial_state()
+                    self.checkpoint_store.save(state)
+                    try:
+                        while True:
+                            if self.monotonic() - started >= self.max_runtime_seconds:
+                                state["status"] = "partial"
+                                self.checkpoint_store.save(state)
+                                return state
+                            query = urlencode(
+                                {
+                                    "page": state["page"],
+                                    "limit": self.batch_size,
+                                    "toTimestamp": state["cutoff"],
+                                    "orderBy": "timestamp.asc",
+                                    "fields": "core",
+                                }
+                            )
+                            payload = self._request_json(f"/api/public/traces?{query}")
+                            traces = payload.get("data", [])
+                            meta = payload.get("meta", {})
+                            if not isinstance(traces, list) or not isinstance(meta, dict):
+                                raise RetentionHttpError(502)
+                            if not traces:
+                                state["status"] = "completed"
+                                state["last_error_code"] = None
+                                self.checkpoint_store.save(state)
+                                return state
+                            for trace in traces:
+                                if self.monotonic() - started >= self.max_runtime_seconds:
+                                    state["status"] = "partial"
+                                    self.checkpoint_store.save(state)
+                                    return state
+                                if not isinstance(trace, dict) or not isinstance(trace.get("id"), str):
+                                    raise RetentionHttpError(502)
+                                self._delete_trace(trace["id"])
+                                state["deleted"] = int(state["deleted"]) + 1
+                                self.checkpoint_store.save(state)
+                            state["page"] = int(state["page"]) + 1
+                            total_pages = int(meta.get("totalPages", state["page"]))
+                            if int(state["page"]) > total_pages:
+                                state["status"] = "completed"
+                                state["last_error_code"] = None
+                                self.checkpoint_store.save(state)
+                                return state
+                            self.checkpoint_store.save(state)
+                    except RetentionHttpError as error:
+                        state["status"] = "failed"
+                        state["last_error_code"] = error.status
+                        self.checkpoint_store.save(state)
+                        raise
+
+
+            def main() -> None:
+                """从受控环境变量构造并运行清理器，不输出凭据或 Trace ID。"""
+
+                store = KubernetesConfigMapCheckpointStore(os.environ["CHECKPOINT_CONFIGMAP"])
+                runner = RetentionRunner(
+                    base_url=os.environ["LANGFUSE_BASE_URL"],
+                    public_key=os.environ["LANGFUSE_PUBLIC_KEY"],
+                    secret_key=os.environ["LANGFUSE_SECRET_KEY"],
+                    retention_days=int(os.environ["RETENTION_DAYS"]),
+                    batch_size=int(os.environ["BATCH_SIZE"]),
+                    max_runtime_seconds=int(os.environ["MAX_RUNTIME_SECONDS"]),
+                    checkpoint_store=store,
+                )
+                result = runner.run()
+                print(
+                    json.dumps(
+                        {
+                            "status": result["status"],
+                            "deleted": result["deleted"],
+                            "last_error_code": result["last_error_code"],
+                        },
+                        separators=(",", ":"),
+                    )
+                )
+
+
+            if __name__ == "__main__":
+                main()
+    - id: checkpoint
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ${metadata.resourceName}-checkpoint
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        data:
+          state.json: ""
+    - id: service-account
+      template:
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        automountServiceAccountToken: true
+    - id: role
+      template:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: Role
+        metadata:
+          name: ${metadata.resourceName}-checkpoint
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        rules:
+          - apiGroups:
+              - ""
+            resources:
+              - configmaps
+            resourceNames:
+              - ${metadata.resourceName}-checkpoint
+            verbs:
+              - get
+              - patch
+              - update
+    - id: role-binding
+      template:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        metadata:
+          name: ${metadata.resourceName}-checkpoint
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        subjects:
+          - kind: ServiceAccount
+            name: ${metadata.resourceName}
+            namespace: ${metadata.namespace}
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: Role
+          name: ${metadata.resourceName}-checkpoint
+    - id: cronjob
+      readyWhen: '${has(applied.cronjob.status)}'
+      template:
+        apiVersion: batch/v1
+        kind: CronJob
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          schedule: "${parameters.schedule}"
+          concurrencyPolicy: Forbid
+          startingDeadlineSeconds: 900
+          successfulJobsHistoryLimit: 2
+          failedJobsHistoryLimit: 3
+          jobTemplate:
+            spec:
+              backoffLimit: 2
+              activeDeadlineSeconds: ${parameters.maxRuntimeSeconds + 60}
+              template:
+                metadata:
+                  labels:
+                    app.kubernetes.io/name: ${metadata.resourceName}
+                spec:
+                  serviceAccountName: ${metadata.resourceName}
+                  restartPolicy: Never
+                  containers:
+                    - name: retention
+                      image: python@sha256:37b14db89f587f9eaa890e4a442a3fe55db452b69cca1403cc730bd0fbdc8aaf
+                      command:
+                        - python
+                        - /opt/langfuse-retention/retention.py
+                      env:
+                        - name: LANGFUSE_BASE_URL
+                          value: "http://${parameters.langfuseServiceName}:3000"
+                        - name: LANGFUSE_PUBLIC_KEY
+                          valueFrom:
+                            secretKeyRef:
+                              name: ${parameters.langfuseSecretName}
+                              key: LANGFUSE_INIT_PROJECT_PUBLIC_KEY
+                        - name: LANGFUSE_SECRET_KEY
+                          valueFrom:
+                            secretKeyRef:
+                              name: ${parameters.langfuseSecretName}
+                              key: LANGFUSE_INIT_PROJECT_SECRET_KEY
+                        - name: RETENTION_DAYS
+                          value: "${string(parameters.retentionDays)}"
+                        - name: BATCH_SIZE
+                          value: "${string(parameters.batchSize)}"
+                        - name: MAX_RUNTIME_SECONDS
+                          value: "${string(parameters.maxRuntimeSeconds)}"
+                        - name: CHECKPOINT_CONFIGMAP
+                          value: ${metadata.resourceName}-checkpoint
+                      resources:
+                        requests:
+                          cpu: 50m
+                          memory: 64Mi
+                        limits:
+                          cpu: 250m
+                          memory: 256Mi
+                      volumeMounts:
+                        - name: script
+                          mountPath: /opt/langfuse-retention
+                          readOnly: true
+                  volumes:
+                    - name: script
+                      configMap:
+                        name: ${metadata.resourceName}-script

@@ -21,6 +21,11 @@
 # occ index files
 .occ
 
+# Python test and bytecode artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 # Package Files #
 *.jar
 *.war

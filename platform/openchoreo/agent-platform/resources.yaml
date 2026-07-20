@@ -121,3 +121,22 @@ spec:
     minioRootSecretName: minio-creds
     clickhouseHost: clickhouse
     publicUrl: https://61.184.12.127:31007
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: langfuse-retention
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+  type:
+    kind: ResourceType
+    name: langfuse-retention
+  parameters:
+    schedule: "17 2 * * *"
+    retentionDays: 7
+    batchSize: 30
+    maxRuntimeSeconds: 600
+    langfuseServiceName: langfuse
+    langfuseSecretName: langfuse-creds
