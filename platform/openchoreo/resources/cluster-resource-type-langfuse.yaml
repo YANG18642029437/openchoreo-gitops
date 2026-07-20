@@ -47,7 +47,11 @@ spec:
         publicUrl:
           type: string
           default: http://langfuse:3000
-        bootstrapRevision:
+        postgresBootstrapRevision:
+          type: string
+          default: v1
+          pattern: '^[a-z0-9-]+$'
+        minioBootstrapRevision:
           type: string
           default: v1
           pattern: '^[a-z0-9-]+$'
@@ -221,7 +225,7 @@ spec:
         apiVersion: batch/v1
         kind: Job
         metadata:
-          name: ${metadata.resourceName}-postgres-bootstrap-${parameters.bootstrapRevision}
+          name: ${metadata.resourceName}-postgres-bootstrap-${parameters.postgresBootstrapRevision}
           namespace: ${metadata.namespace}
           labels: ${metadata.labels}
         spec:
@@ -282,7 +286,7 @@ spec:
         apiVersion: batch/v1
         kind: Job
         metadata:
-          name: ${metadata.resourceName}-minio-bootstrap-${parameters.bootstrapRevision}
+          name: ${metadata.resourceName}-minio-bootstrap-${parameters.minioBootstrapRevision}
           namespace: ${metadata.namespace}
           labels: ${metadata.labels}
         spec:
