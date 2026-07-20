@@ -120,7 +120,7 @@ spec:
     minioHost: minio
     minioRootSecretName: minio-creds
     clickhouseHost: clickhouse
-    publicUrl: https://61.184.12.127:31007
+    publicUrl: https://192.168.2.154:31007
 ---
 apiVersion: openchoreo.dev/v1alpha1
 kind: Resource

@@ -12,6 +12,7 @@
 | OpenChoreo | `https://192.168.2.154:31004/` | 开发者门户 |
 | Observer | `https://192.168.2.154:31005/health` | Observer 是平台 API，不是独立管理界面；日常观测从 OpenChoreo 门户进入 |
 | Thunder | `https://192.168.2.154:31006/console/` | 身份服务管理控制台；`/gate/` 是登录界面 |
+| Langfuse | `https://192.168.2.154:31007/` | Agent Platform development 的 LLM 可观测管理平台 |
 
 ## 使用前提
 
@@ -43,7 +44,7 @@ export KUBECONFIG=../openchoreo-infra/.private/kubeconfigs/homelab-admin-direct.
 
 ## 回滚
 
-删除或禁用 Argo CD 的 `ip-access` Application 即可撤销这组入口；不要删除六个平台本身。
+删除或禁用 Argo CD 的 `ip-access` Application 即可撤销这组入口；不要删除七个平台本身。
 原域名入口与内部 ClusterIP 服务不依赖该网关。
 
 ## 已知限制

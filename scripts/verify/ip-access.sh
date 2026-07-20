@@ -32,7 +32,7 @@ grep -q 'metallb.io/loadBalancerIPs: 192.168.2.154' "$root/service.yaml"
 grep -A2 'loadBalancerSourceRanges:' "$root/service.yaml" | grep -q '192.168.1.108/32'
 grep -q 'allocateLoadBalancerNodePorts: false' "$root/service.yaml"
 grep -q 'externalTrafficPolicy: Cluster' "$root/service.yaml"
-for port in 31001 31002 31003 31004 31005 31006; do
+for port in 31001 31002 31003 31004 31005 31006 31007; do
   grep -q "port: $port" "$root/service.yaml"
 done
 for host in argocd harbor openbao observer thunder; do
@@ -45,6 +45,13 @@ sed -n '/listen 8446/,/^      }/p' "$root/configmap.yaml" | grep -q "sub_filter 
 grep -q 'location = /gate/config.js' "$root/configmap.yaml"
 grep -q 'Cache-Control "no-store"' "$root/configmap.yaml"
 sed -n '/listen 8446/,/^      }/p' "$root/configmap.yaml" | grep -q 'sub_filter_types application/javascript text/javascript application/json'
+grep -q 'listen 8447 ssl' "$root/configmap.yaml"
+grep -q 'langfuse.dp-agent-platfor-agent-platfor-development-4e4bdc7d.svc.cluster.local:3000' "$root/configmap.yaml"
+grep -q 'name: langfuse' "$root/deployment.yaml"
+grep -q 'containerPort: 8447' "$root/deployment.yaml"
+grep -q 'targetPort: langfuse' "$root/service.yaml"
+grep -q 'dp-agent-platfor-agent-platfor-development-4e4bdc7d' "$root/network-policy.yaml"
+grep -q 'port: 3000' "$root/network-policy.yaml"
 grep -q 'Upgrade' "$root/configmap.yaml"
 grep -q 'kind: NetworkPolicy' "$root/network-policy.yaml"
 grep -q 'port: 8080' "$root/network-policy.yaml"

@@ -164,7 +164,7 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 | `kustomization.yaml` | 汇总 IP 访问 Namespace、ConfigMap、Certificate、Deployment、Service 和 NetworkPolicy。 |
 | `namespace.yaml` | 创建隔离的 `platform-access` Namespace。 |
 | `network-policy.yaml` | 限制访问网关的入站和出站网络，只允许必要的管理端口、DNS 和后端服务。 |
-| `service.yaml` | 使用 MetalLB `LoadBalancer` 地址 `192.168.2.154` 暴露允许访问的六个 Web 管理平台端口。 |
+| `service.yaml` | 使用 MetalLB `LoadBalancer` 地址 `192.168.2.154` 暴露允许访问的七个 Web 管理平台端口。 |
 
 #### `infrastructure/metallb/`
 

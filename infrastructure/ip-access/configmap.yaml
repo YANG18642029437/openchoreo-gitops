@@ -148,4 +148,13 @@ data:
           proxy_redirect http://openchoreo.home.arpa/ https://192.168.2.154:31004/;
         }
       }
+
+      server {
+        listen 8447 ssl;
+        server_name _;
+        location / {
+          proxy_set_header Host $http_host;
+          proxy_pass http://langfuse.dp-agent-platfor-agent-platfor-development-4e4bdc7d.svc.cluster.local:3000;
+        }
+      }
     }

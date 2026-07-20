@@ -18,6 +18,7 @@ spec:
         - { protocol: TCP, port: 8444 }
         - { protocol: TCP, port: 8445 }
         - { protocol: TCP, port: 8446 }
+        - { protocol: TCP, port: 8447 }
   egress:
     - to:
         - namespaceSelector:
@@ -49,3 +50,9 @@ spec:
               kubernetes.io/metadata.name: argocd
       ports:
         - { protocol: TCP, port: 8080 }
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: dp-agent-platfor-agent-platfor-development-4e4bdc7d
+      ports:
+        - { protocol: TCP, port: 3000 }

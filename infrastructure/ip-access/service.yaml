@@ -20,3 +20,4 @@ spec:
     - { name: openchoreo, port: 31004, targetPort: openchoreo }
     - { name: observer, port: 31005, targetPort: observer }
     - { name: thunder, port: 31006, targetPort: thunder }
+    - { name: langfuse, port: 31007, targetPort: langfuse }
