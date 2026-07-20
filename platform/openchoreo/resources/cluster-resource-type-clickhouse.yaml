@@ -48,8 +48,9 @@ spec:
         name: "${metadata.resourceName}-creds"
         key: password
   resources:
+    # OpenChoreo v1.1.2 可能丢失 ExternalSecret 的纯 status 更新；
+    # StatefulSet 的登录探针负责验证 Secret 已生成且 ClickHouse 凭据真实可用。
     - id: credentials
-      readyWhen: '${has(applied.credentials.status.conditions) && applied.credentials.status.conditions.exists(c, c.type == "Ready" && c.status == "True" && c.reason == "SecretSynced")}'
       template:
         apiVersion: external-secrets.io/v1
         kind: ExternalSecret

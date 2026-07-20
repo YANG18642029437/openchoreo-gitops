@@ -25,6 +25,12 @@ grep -Eq 'image: .+@sha256:[0-9a-f]{64}' "$clickhouse"
 test "$(grep -Ec 'image: .+@sha256:[0-9a-f]{64}' "$langfuse")" -ge 4
 grep -Eq 'image: .+@sha256:[0-9a-f]{64}' "$retention"
 
+# OpenChoreo v1.1.2 不可靠地转发 ExternalSecret 的纯 status 更新；
+# ClickHouse 登录 readiness 是凭据可用性的最终门禁，因此只允许这一处 readyWhen。
+test "$(grep -c 'readyWhen:' "$clickhouse")" -eq 1
+grep -Fq 'refreshInterval: 1h' "$clickhouse"
+grep -Fq "clickhouse-client --user \"\$CLICKHOUSE_USER\" --password \"\$CLICKHOUSE_PASSWORD\"" "$clickhouse"
+
 for file in "$clickhouse" "$langfuse" "$retention"; do
   grep -Fq 'secretKeyRef:' "$file"
   grep -Fq 'readyWhen:' "$file"
