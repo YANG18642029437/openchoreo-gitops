@@ -71,7 +71,7 @@ fi
 test "$(grep -c 'retainPolicy: Retain' "$project_base/resource-bindings.yaml")" -eq "$binding_count"
 if [[ "$binding_count" == 8 ]]; then
   grep -Fq 'resourceRelease: redis-78bc6c7cb' "$project_base/resource-bindings.yaml"
-  grep -Fq 'resourceRelease: clickhouse-7795c67d8b' "$project_base/resource-bindings.yaml"
+  grep -Fq 'resourceRelease: clickhouse-5f7f6799dc' "$project_base/resource-bindings.yaml"
   grep -Fq 'resourceRelease: langfuse-7449bfdb7d' "$project_base/resource-bindings.yaml"
   grep -Fq 'resourceRelease: langfuse-retention-5d7498679b' "$project_base/resource-bindings.yaml"
 fi
