@@ -47,6 +47,10 @@ spec:
         publicUrl:
           type: string
           default: http://langfuse:3000
+        bootstrapRevision:
+          type: string
+          default: v1
+          pattern: '^[a-z0-9-]+$'
   retainPolicy: Retain
   outputs:
     - name: host
@@ -217,7 +221,7 @@ spec:
         apiVersion: batch/v1
         kind: Job
         metadata:
-          name: ${metadata.resourceName}-postgres-bootstrap
+          name: ${metadata.resourceName}-postgres-bootstrap-${parameters.bootstrapRevision}
           namespace: ${metadata.namespace}
           labels: ${metadata.labels}
         spec:
@@ -230,6 +234,7 @@ spec:
             spec:
               restartPolicy: OnFailure
               automountServiceAccountToken: false
+              enableServiceLinks: false
               containers:
                 - name: bootstrap
                   image: postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
@@ -273,7 +278,7 @@ spec:
         apiVersion: batch/v1
         kind: Job
         metadata:
-          name: ${metadata.resourceName}-minio-bootstrap
+          name: ${metadata.resourceName}-minio-bootstrap-${parameters.bootstrapRevision}
           namespace: ${metadata.namespace}
           labels: ${metadata.labels}
         spec:
@@ -286,6 +291,7 @@ spec:
             spec:
               restartPolicy: OnFailure
               automountServiceAccountToken: false
+              enableServiceLinks: false
               containers:
                 - name: bootstrap
                   image: quay.io/minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
@@ -371,6 +377,7 @@ spec:
             spec:
               serviceAccountName: ${metadata.resourceName}
               automountServiceAccountToken: false
+              enableServiceLinks: false
               containers:
                 - name: web
                   image: langfuse/langfuse@sha256:35461119756177199bf4412ceed03e0f637ca5c4a6b8b85d9e31c35e515e670d
@@ -435,6 +442,7 @@ spec:
             spec:
               serviceAccountName: ${metadata.resourceName}
               automountServiceAccountToken: false
+              enableServiceLinks: false
               containers:
                 - name: worker
                   image: langfuse/langfuse-worker@sha256:080377807b6d1fca2117662840161e60a0ab6842b2578ef39ea17df80ba42bfd

@@ -33,6 +33,9 @@ done
 for dependency in postgresql redis minio clickhouse; do
   grep -Fq "${dependency}" "$langfuse"
 done
+test "$(grep -c 'enableServiceLinks: false' "$langfuse")" -ge 4
+grep -Fq 'bootstrapRevision:' "$langfuse"
+grep -Fq 'bootstrapRevision: v2' "$project_base/resources.yaml"
 if grep -Eq '(^|[[:space:]])(postgresql|redis|clickhouse|minio)[[:space:]]*:[[:space:]]*enabled' "$langfuse"; then
   printf 'Langfuse ResourceType must not deploy built-in dependencies\n' >&2
   exit 1
