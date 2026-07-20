@@ -24,6 +24,7 @@ spec:
                   database.openchoreo.io/port: "5432"
               spec:
                 instances: 1
+                enableSuperuserAccess: true
                 storage:
                   size: 10Gi
                   storageClass: local-path

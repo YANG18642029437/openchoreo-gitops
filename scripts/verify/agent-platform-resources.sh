@@ -52,8 +52,13 @@ grep -Fq 'appendonly yes' "$types_base/cluster-resource-type-redis.yaml"
 grep -Fq 'name: REDISCLI_AUTH' "$types_base/cluster-resource-type-redis.yaml"
 grep -Fq 'redis-cli ping' "$types_base/cluster-resource-type-redis.yaml"
 grep -Fq 'secretPath: agent-platform/development/redis' "$project_base/resources.yaml"
+grep -Fq 'enableSuperuserAccess: true' platform/apis/postgresql/composition.yaml
+grep -Fq 'user langfuse on >{{ .langfuse_password }}' "$types_base/cluster-resource-type-redis.yaml"
+grep -Fq 'property: langfuse_password' "$types_base/cluster-resource-type-redis.yaml"
+grep -Fq 'langfuseDatabase: 1' "$project_base/resources.yaml"
+grep -Fq 'key: langfuse_password' "$types_base/cluster-resource-type-redis.yaml"
 grep -Fq 'databaseName: agent_platform' "$project_base/resources.yaml"
-test "$(grep -c '^kind: Resource$' "$project_base/resources.yaml")" -eq 5
+test "$(grep -c '^kind: Resource$' "$project_base/resources.yaml")" -ge 6
 grep -Fq 'name: postgresql-development' "$project_base/resource-bindings.yaml"
 grep -Fq 'resourceRelease: postgresql-' "$project_base/resource-bindings.yaml"
 grep -Fq 'name: redis-development' "$project_base/resource-bindings.yaml"

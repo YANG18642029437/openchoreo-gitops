@@ -81,6 +81,7 @@ spec:
     secretPath: agent-platform/development/redis
     storageClass: local-path
     storageGiB: 10
+    langfuseDatabase: 1
 ---
 apiVersion: openchoreo.dev/v1alpha1
 kind: Resource

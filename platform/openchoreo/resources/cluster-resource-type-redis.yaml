@@ -23,6 +23,11 @@ spec:
           default: 10
           minimum: 10
           maximum: 100
+        langfuseDatabase:
+          type: integer
+          default: 1
+          minimum: 1
+          maximum: 15
   retainPolicy: Retain
   outputs:
     - name: host
@@ -35,6 +40,12 @@ spec:
       secretKeyRef:
         name: "${metadata.resourceName}-creds"
         key: password
+    - name: langfuseDatabase
+      value: "${string(parameters.langfuseDatabase)}"
+    - name: langfusePassword
+      secretKeyRef:
+        name: "${metadata.resourceName}-creds"
+        key: langfuse_password
   resources:
     - id: credentials
       readyWhen: '${has(applied.credentials.status.conditions) && applied.credentials.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}'
@@ -56,6 +67,7 @@ spec:
               type: Opaque
               data:
                 password: "{{ .password }}"
+                langfuse_password: "{{ .langfuse_password }}"
                 redis.conf: |
                   bind 0.0.0.0
                   protected-mode yes
@@ -63,12 +75,17 @@ spec:
                   dir /data
                   appendonly yes
                   appendfsync everysec
-                  requirepass {{ .password }}
+                  user default on >{{ .password }} ~* +@all
+                  user langfuse on >{{ .langfuse_password }} ~* +@all
           data:
             - secretKey: password
               remoteRef:
                 key: ${parameters.secretPath}
                 property: password
+            - secretKey: langfuse_password
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: langfuse_password
     - id: service
       template:
         apiVersion: v1
