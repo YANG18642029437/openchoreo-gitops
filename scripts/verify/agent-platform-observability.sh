@@ -39,9 +39,18 @@ if grep -Eq '(^|[[:space:]])(postgresql|redis|clickhouse|minio)[[:space:]]*:[[:s
 fi
 
 test "$(grep -c '^kind: Resource$' "$project_base/resources.yaml")" -eq 8
-test "$(grep -c '^kind: ResourceReleaseBinding$' "$project_base/resource-bindings.yaml")" -eq 8
-grep -Fq 'name: clickhouse' "$project_base/resources.yaml"
-grep -Fq 'name: langfuse' "$project_base/resources.yaml"
-grep -Fq 'name: langfuse-retention' "$project_base/resources.yaml"
+binding_count="$(grep -c '^kind: ResourceReleaseBinding$' "$project_base/resource-bindings.yaml")"
+if [[ "$binding_count" != 5 && "$binding_count" != 8 ]]; then
+  printf 'expected either 5 bootstrap bindings or 8 fully pinned bindings, got %s\n' "$binding_count" >&2
+  exit 1
+fi
+for resource in clickhouse langfuse langfuse-retention; do
+  grep -Fq "name: ${resource}" "$project_base/resources.yaml"
+done
+if [[ "$binding_count" == 8 ]]; then
+  for resource in clickhouse langfuse langfuse-retention; do
+    grep -Fq "name: ${resource}-development" "$project_base/resource-bindings.yaml"
+  done
+fi
 
 printf 'Agent Platform Langfuse observability contract: PASS\n'
