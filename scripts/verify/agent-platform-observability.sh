@@ -36,7 +36,7 @@ done
 test "$(grep -c 'enableServiceLinks: false' "$langfuse")" -ge 4
 grep -Fq 'postgresBootstrapRevision:' "$langfuse"
 grep -Fq 'minioBootstrapRevision:' "$langfuse"
-grep -Fq 'postgresBootstrapRevision: v4' "$project_base/resources.yaml"
+grep -Fq 'postgresBootstrapRevision: v5' "$project_base/resources.yaml"
 grep -Fq 'minioBootstrapRevision: v2' "$project_base/resources.yaml"
 grep -Fq 'startupProbe:' "$langfuse"
 grep -Fq 'failureThreshold: 60' "$langfuse"

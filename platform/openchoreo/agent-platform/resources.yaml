@@ -121,7 +121,7 @@ spec:
     minioRootSecretName: minio-creds
     clickhouseHost: clickhouse
     publicUrl: https://192.168.2.154:31007
-    postgresBootstrapRevision: v4
+    postgresBootstrapRevision: v5
     minioBootstrapRevision: v2
 ---
 apiVersion: openchoreo.dev/v1alpha1
