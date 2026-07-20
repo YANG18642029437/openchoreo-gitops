@@ -75,7 +75,7 @@ spec:
     resourceName: clickhouse
   environment: development
   retainPolicy: Retain
-  resourceRelease: clickhouse-78f9964f7f
+  resourceRelease: clickhouse-7795c67d8b
 ---
 apiVersion: openchoreo.dev/v1alpha1
 kind: ResourceReleaseBinding
