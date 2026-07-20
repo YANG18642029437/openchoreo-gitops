@@ -254,6 +254,10 @@ spec:
                         createdb -O langfuse langfuse
                       fi
                       psql -v ON_ERROR_STOP=1 -d postgres -c "ALTER DATABASE langfuse OWNER TO langfuse" >/dev/null
+                      if ! psql -Atqc "SELECT 1 FROM pg_database WHERE datname = 'langfuse_shadow'" -d postgres | grep -q 1; then
+                        createdb -O langfuse langfuse_shadow
+                      fi
+                      psql -v ON_ERROR_STOP=1 -d postgres -c "ALTER DATABASE langfuse_shadow OWNER TO langfuse" >/dev/null
                   env:
                     - name: PGHOST
                       value: ${parameters.postgresqlHost}
@@ -388,6 +392,13 @@ spec:
                     - secretRef:
                         name: ${metadata.resourceName}-creds
                   env:
+                    - name: DATABASE_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${metadata.resourceName}-creds
+                          key: DATABASE_PASSWORD
+                    - name: SHADOW_DATABASE_URL
+                      value: "postgresql://langfuse:$(DATABASE_PASSWORD)@${parameters.postgresqlHost}:5432/langfuse_shadow"
                     - name: REDIS_CONNECTION_STRING
                       value: "redis://langfuse:$(REDIS_PASSWORD)@${parameters.redisHost}:6379/${string(parameters.redisDatabase)}"
                     - name: PORT
@@ -453,6 +464,13 @@ spec:
                     - secretRef:
                         name: ${metadata.resourceName}-creds
                   env:
+                    - name: DATABASE_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${metadata.resourceName}-creds
+                          key: DATABASE_PASSWORD
+                    - name: SHADOW_DATABASE_URL
+                      value: "postgresql://langfuse:$(DATABASE_PASSWORD)@${parameters.postgresqlHost}:5432/langfuse_shadow"
                     - name: REDIS_CONNECTION_STRING
                       value: "redis://langfuse:$(REDIS_PASSWORD)@${parameters.redisHost}:6379/${string(parameters.redisDatabase)}"
                     - name: HOSTNAME
