@@ -81,3 +81,20 @@ spec:
     secretPath: agent-platform/development/redis
     storageClass: local-path
     storageGiB: 10
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: clickhouse
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+  type:
+    kind: ClusterResourceType
+    name: clickhouse
+  parameters:
+    secretPath: agent-platform/development/langfuse
+    databaseName: langfuse
+    storageClass: local-path
+    storageGiB: 20

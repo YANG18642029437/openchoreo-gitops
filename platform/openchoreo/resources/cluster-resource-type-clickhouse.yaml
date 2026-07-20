@@ -1,0 +1,212 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterResourceType
+metadata:
+  name: clickhouse
+  annotations:
+    openchoreo.dev/display-name: ClickHouse
+    openchoreo.dev/description: Single-instance ClickHouse for Langfuse development analytics
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      required:
+        - secretPath
+      properties:
+        secretPath:
+          type: string
+          minLength: 1
+        databaseName:
+          type: string
+          default: langfuse
+          pattern: '^[a-zA-Z_][a-zA-Z0-9_]*$'
+        storageClass:
+          type: string
+          default: local-path
+        storageGiB:
+          type: integer
+          default: 20
+          minimum: 10
+          maximum: 200
+  retainPolicy: Retain
+  outputs:
+    - name: host
+      value: "${metadata.resourceName}.${metadata.namespace}.svc.cluster.local"
+    - name: httpPort
+      value: "8123"
+    - name: nativePort
+      value: "9000"
+    - name: database
+      value: "${parameters.databaseName}"
+    - name: secretName
+      value: "${metadata.resourceName}-creds"
+    - name: username
+      secretKeyRef:
+        name: "${metadata.resourceName}-creds"
+        key: username
+    - name: password
+      secretKeyRef:
+        name: "${metadata.resourceName}-creds"
+        key: password
+  resources:
+    - id: credentials
+      readyWhen: '${has(applied.credentials.status.conditions) && applied.credentials.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}'
+      template:
+        apiVersion: external-secrets.io/v1
+        kind: ExternalSecret
+        metadata:
+          name: ${metadata.resourceName}-creds
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          secretStoreRef:
+            kind: ClusterSecretStore
+            name: openbao
+          target:
+            name: ${metadata.resourceName}-creds
+            creationPolicy: Owner
+          data:
+            - secretKey: username
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: clickhouse_username
+            - secretKey: password
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: clickhouse_password
+    - id: config
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ${metadata.resourceName}-config
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        data:
+          timezone.xml: |
+            <clickhouse>
+              <timezone>UTC</timezone>
+            </clickhouse>
+    - id: headless
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${metadata.resourceName}-headless
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          clusterIP: None
+          selector:
+            app.kubernetes.io/name: ${metadata.resourceName}
+          ports:
+            - name: native
+              port: 9000
+              targetPort: native
+    - id: service
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          selector:
+            app.kubernetes.io/name: ${metadata.resourceName}
+          ports:
+            - name: http
+              port: 8123
+              targetPort: http
+            - name: native
+              port: 9000
+              targetPort: native
+    - id: clickhouse
+      readyWhen: '${has(applied.clickhouse.status.readyReplicas) && applied.clickhouse.status.readyReplicas == 1}'
+      template:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          serviceName: ${metadata.resourceName}-headless
+          replicas: 1
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${metadata.resourceName}
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${metadata.resourceName}
+            spec:
+              securityContext:
+                fsGroup: 101
+                fsGroupChangePolicy: OnRootMismatch
+              containers:
+                - name: clickhouse
+                  image: clickhouse/clickhouse-server@sha256:32a477a44e92a37347e6df7684a1e6cce01f5af73d356e03ca13383da0bdf8b3
+                  env:
+                    - name: TZ
+                      value: UTC
+                    - name: CLICKHOUSE_DB
+                      value: ${parameters.databaseName}
+                    - name: CLICKHOUSE_USER
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${metadata.resourceName}-creds
+                          key: username
+                    - name: CLICKHOUSE_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${metadata.resourceName}-creds
+                          key: password
+                    - name: CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT
+                      value: "1"
+                  ports:
+                    - name: http
+                      containerPort: 8123
+                    - name: native
+                      containerPort: 9000
+                  readinessProbe:
+                    exec:
+                      command:
+                        - /bin/sh
+                        - -ec
+                        - clickhouse-client --user "$CLICKHOUSE_USER" --password "$CLICKHOUSE_PASSWORD" --query 'SELECT 1'
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+                  livenessProbe:
+                    httpGet:
+                      path: /ping
+                      port: http
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                  resources:
+                    requests:
+                      cpu: 250m
+                      memory: 1Gi
+                    limits:
+                      cpu: "2"
+                      memory: 4Gi
+                  volumeMounts:
+                    - name: data
+                      mountPath: /var/lib/clickhouse
+                    - name: config
+                      mountPath: /etc/clickhouse-server/config.d/timezone.xml
+                      subPath: timezone.xml
+                      readOnly: true
+              volumes:
+                - name: config
+                  configMap:
+                    name: ${metadata.resourceName}-config
+          volumeClaimTemplates:
+            - metadata:
+                name: data
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                storageClassName: ${parameters.storageClass}
+                resources:
+                  requests:
+                    storage: "${string(parameters.storageGiB) + 'Gi'}"
