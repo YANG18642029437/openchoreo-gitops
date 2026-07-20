@@ -11,3 +11,5 @@
 MinIO 与 Redis 密码分别由 OpenBao 的 `openchoreo/agent-platform/development/minio`、`openchoreo/agent-platform/development/redis` 提供，并通过 External Secrets Operator 同步到数据平面。PostgreSQL 应用凭据由 CloudNativePG 生成。本目录不得写入密码、Token、kubeconfig 或 Secret 明文。
 
 Langfuse 复用 PostgreSQL、Redis 和 MinIO，但必须使用独立 PostgreSQL role/database、Redis ACL 用户与逻辑 DB 1、MinIO 专用用户和三个专用 bucket。ClickHouse 为 Langfuse 独占单实例。共享不等于共享凭据，Langfuse Web/Worker 不读取 RAG 应用凭据或 MinIO root Secret。Langfuse Resource 只声明稳定的同 Namespace Service/Secret 名，实际 ResourceRelease 名必须由 OpenChoreo 生成后再写回 Binding。
+
+development 当前固定的观测资源发布为：`clickhouse-78f9964f7f`、`langfuse-57594884d`、`langfuse-retention-5999ddbc97`；Redis 凭据隔离变更固定为 `redis-78bc6c7cb`。这些名称来自 homelab 集群实际生成结果，不是预测哈希。

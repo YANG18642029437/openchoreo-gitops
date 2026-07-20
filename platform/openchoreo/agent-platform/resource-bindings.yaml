@@ -62,4 +62,43 @@ spec:
     resourceName: redis
   environment: development
   retainPolicy: Retain
-  resourceRelease: redis-6965c69987
+  resourceRelease: redis-78bc6c7cb
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: clickhouse-development
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+    resourceName: clickhouse
+  environment: development
+  retainPolicy: Retain
+  resourceRelease: clickhouse-78f9964f7f
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: langfuse-development
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+    resourceName: langfuse
+  environment: development
+  retainPolicy: Retain
+  resourceRelease: langfuse-57594884d
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: langfuse-retention-development
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+    resourceName: langfuse-retention
+  environment: development
+  retainPolicy: Retain
+  resourceRelease: langfuse-retention-5999ddbc97

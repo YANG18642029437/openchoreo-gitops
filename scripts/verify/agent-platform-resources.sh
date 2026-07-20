@@ -64,8 +64,17 @@ grep -Fq 'resourceRelease: postgresql-' "$project_base/resource-bindings.yaml"
 grep -Fq 'name: redis-development' "$project_base/resource-bindings.yaml"
 grep -Fq 'resourceRelease: redis-' "$project_base/resource-bindings.yaml"
 binding_count="$(grep -c '^kind: ResourceReleaseBinding$' "$project_base/resource-bindings.yaml")"
-test "$binding_count" -eq 5
+if [[ "$binding_count" != 5 && "$binding_count" != 8 ]]; then
+  printf 'expected either 5 bootstrap bindings or 8 fully pinned bindings, got %s\n' "$binding_count" >&2
+  exit 1
+fi
 test "$(grep -c 'retainPolicy: Retain' "$project_base/resource-bindings.yaml")" -eq "$binding_count"
+if [[ "$binding_count" == 8 ]]; then
+  grep -Fq 'resourceRelease: redis-78bc6c7cb' "$project_base/resource-bindings.yaml"
+  grep -Fq 'resourceRelease: clickhouse-78f9964f7f' "$project_base/resource-bindings.yaml"
+  grep -Fq 'resourceRelease: langfuse-57594884d' "$project_base/resource-bindings.yaml"
+  grep -Fq 'resourceRelease: langfuse-retention-5999ddbc97' "$project_base/resource-bindings.yaml"
+fi
 
 rendered="$(mktemp "${TMPDIR:-/tmp}/agent-platform-resources.XXXXXX")"
 trap 'rm -f "$rendered"' EXIT

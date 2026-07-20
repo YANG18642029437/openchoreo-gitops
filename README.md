@@ -258,8 +258,9 @@ Argo CD 已启用自动同步、`selfHeal` 和 `prune`：
 | `environment-development.yaml` | 创建只绑定默认 ClusterDataPlane 的非生产 `development` Environment。 |
 | `deployment-pipeline.yaml` | 创建只有 development 起点且暂无晋级目标的 `development-only` DeploymentPipeline。 |
 | `project.yaml` | 创建使用 `development-only` Pipeline 的 `agent-platform` Project。 |
-| `resources.yaml` | 申请 development 使用的 PostgreSQL、Redis、MinIO、单副本 RabbitMQ 和 standalone Milvus。 |
-| `resource-bindings.yaml` | 声明五个资源的 development 发布绑定；初次生成 Release 后把实际名称固定回 Git。 |
+| `resources.yaml` | 申请 development 使用的 PostgreSQL、Redis、MinIO、RabbitMQ、Milvus、ClickHouse、Langfuse 和保留任务。 |
+| `resource-bindings.yaml` | 固定八个资源由 OpenChoreo 实际生成的 development ResourceRelease 名称。 |
+| `resource-type-langfuse-retention.yaml` | 定义只通过 Public API 执行的 7 天 Trace 清理 CronJob、最小 RBAC 和 checkpoint。 |
 | `kustomization.yaml` | 汇总 Agent Platform Namespace、Environment、DeploymentPipeline、Project、Resource 和 ResourceReleaseBinding。 |
 
 ##### `platform/openchoreo/data-plane-runtime/`
