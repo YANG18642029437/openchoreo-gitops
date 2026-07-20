@@ -88,7 +88,7 @@ spec:
     resourceName: langfuse
   environment: development
   retainPolicy: Retain
-  resourceRelease: langfuse-96675c84c
+  resourceRelease: langfuse-787455586f
 ---
 apiVersion: openchoreo.dev/v1alpha1
 kind: ResourceReleaseBinding
