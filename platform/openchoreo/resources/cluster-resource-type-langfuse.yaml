@@ -373,6 +373,9 @@ spec:
         spec:
           replicas: 1
           revisionHistoryLimit: 3
+          # development 为单实例；Recreate 避免两个 Web Pod 并发执行 Prisma 迁移。
+          strategy:
+            type: Recreate
           selector:
             matchLabels:
               app.kubernetes.io/name: ${metadata.resourceName}
@@ -412,6 +415,14 @@ spec:
                   ports:
                     - name: http
                       containerPort: 3000
+                  # 首次启动需要执行数百条迁移，完成前暂停存活与就绪探针。
+                  startupProbe:
+                    httpGet:
+                      path: /api/public/health
+                      port: http
+                    failureThreshold: 60
+                    periodSeconds: 10
+                    timeoutSeconds: 5
                   livenessProbe:
                     httpGet:
                       path: /api/public/health
