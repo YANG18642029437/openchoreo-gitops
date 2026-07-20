@@ -44,6 +44,8 @@ grep -Fq 'maxSurge: 0' "$langfuse"
 grep -Fq 'maxUnavailable: 1' "$langfuse"
 grep -Fq -- '--max-old-space-size=1536' "$langfuse"
 grep -Fq 'memory: 2Gi' "$langfuse"
+grep -Fq 'activeDeadlineSeconds: ${int(parameters.maxRuntimeSeconds) + 60}' \
+  "$project_base/resource-type-langfuse-retention.yaml"
 grep -Fq 'printf "DO \$\$ BEGIN' "$langfuse"
 grep -Fq 'langfuse_shadow' "$langfuse"
 grep -Fq 'name: SHADOW_DATABASE_URL' "$langfuse"

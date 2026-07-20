@@ -374,7 +374,7 @@ spec:
           jobTemplate:
             spec:
               backoffLimit: 2
-              activeDeadlineSeconds: ${parameters.maxRuntimeSeconds + 60}
+              activeDeadlineSeconds: ${int(parameters.maxRuntimeSeconds) + 60}
               template:
                 metadata:
                   labels:
