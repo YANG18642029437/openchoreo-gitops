@@ -415,6 +415,9 @@ spec:
                       value: "3000"
                     - name: HOSTNAME
                       value: "0.0.0.0"
+                    # Langfuse 初始化模块数量较多，显式扩大 Node.js 堆并保留容器原生内存余量。
+                    - name: NODE_OPTIONS
+                      value: "--max-old-space-size=1536"
                   ports:
                     - name: http
                       containerPort: 3000
@@ -446,7 +449,7 @@ spec:
                       memory: 512Mi
                     limits:
                       cpu: "1"
-                      memory: 1Gi
+                      memory: 2Gi
     - id: worker
       readyWhen: '${has(applied.worker.status.readyReplicas) && applied.worker.status.readyReplicas == 1}'
       template:
