@@ -113,8 +113,8 @@ spec:
     name: langfuse
   parameters:
     secretPath: agent-platform/development/langfuse
-    postgresqlHost: postgresql-rw
-    postgresqlSuperuserSecretName: postgresql-superuser
+    postgresqlHost: r-postgresql-development-8564561d-rw
+    postgresqlSuperuserSecretName: r-postgresql-development-8564561d-superuser
     redisHost: redis
     redisDatabase: 1
     minioHost: minio
