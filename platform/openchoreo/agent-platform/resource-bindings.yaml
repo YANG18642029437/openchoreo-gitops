@@ -101,4 +101,4 @@ spec:
     resourceName: langfuse-retention
   environment: development
   retainPolicy: Retain
-  resourceRelease: langfuse-retention-5999ddbc97
+  resourceRelease: langfuse-retention-5d7498679b

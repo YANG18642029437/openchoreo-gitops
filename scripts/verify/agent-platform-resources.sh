@@ -73,7 +73,7 @@ if [[ "$binding_count" == 8 ]]; then
   grep -Fq 'resourceRelease: redis-78bc6c7cb' "$project_base/resource-bindings.yaml"
   grep -Fq 'resourceRelease: clickhouse-78f9964f7f' "$project_base/resource-bindings.yaml"
   grep -Fq 'resourceRelease: langfuse-7449bfdb7d' "$project_base/resource-bindings.yaml"
-  grep -Fq 'resourceRelease: langfuse-retention-5999ddbc97' "$project_base/resource-bindings.yaml"
+  grep -Fq 'resourceRelease: langfuse-retention-5d7498679b' "$project_base/resource-bindings.yaml"
 fi
 
 rendered="$(mktemp "${TMPDIR:-/tmp}/agent-platform-resources.XXXXXX")"
