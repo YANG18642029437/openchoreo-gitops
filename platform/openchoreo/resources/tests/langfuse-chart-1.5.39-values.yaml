@@ -1,0 +1,84 @@
+# Langfuse 3.212.0 的外部依赖渲染基线，仅使用占位 Secret 验证官方 Chart。
+langfuse:
+  image:
+    tag: 3.212.0
+    pullPolicy: IfNotPresent
+  salt:
+    secretKeyRef:
+      name: langfuse-creds
+      key: salt
+  encryptionKey:
+    secretKeyRef:
+      name: langfuse-creds
+      key: encryption_key
+  features:
+    telemetryEnabled: false
+    signUpDisabled: true
+    experimentalFeaturesEnabled: false
+  serviceAccount:
+    automountServiceAccountToken: false
+  nextauth:
+    url: http://langfuse:3000
+    secret:
+      secretKeyRef:
+        name: langfuse-creds
+        key: nextauth_secret
+  web:
+    replicas: 1
+    image:
+      repository: langfuse/langfuse
+      tag: 3.212.0
+  worker:
+    replicas: 1
+    image:
+      repository: langfuse/langfuse-worker
+      tag: 3.212.0
+
+postgresql:
+  deploy: false
+  host: postgresql-rw.agent-platform-development.svc.cluster.local
+  port: 5432
+  auth:
+    username: langfuse
+    database: langfuse
+    existingSecret: langfuse-creds
+    secretKeys:
+      userPasswordKey: postgres_password
+      adminPasswordKey: postgres_password
+
+redis:
+  deploy: false
+  host: redis.agent-platform-development.svc.cluster.local
+  port: 6379
+  auth:
+    username: langfuse
+    database: 1
+    existingSecret: redis-creds
+    existingSecretPasswordKey: langfuse_password
+
+clickhouse:
+  deploy: false
+  host: clickhouse.agent-platform-development.svc.cluster.local
+  httpPort: 8123
+  nativePort: 9000
+  database: langfuse
+  clusterEnabled: false
+  auth:
+    username: langfuse
+    existingSecret: langfuse-creds
+    existingSecretKey: clickhouse_password
+
+s3:
+  deploy: false
+  bucket: langfuse
+  region: us-east-1
+  endpoint: http://minio.agent-platform-development.svc.cluster.local:9000
+  forcePathStyle: true
+  accessKeyId:
+    secretKeyRef:
+      name: langfuse-creds
+      key: minio_access_key
+  secretAccessKey:
+    secretKeyRef:
+      name: langfuse-creds
+      key: minio_secret_key

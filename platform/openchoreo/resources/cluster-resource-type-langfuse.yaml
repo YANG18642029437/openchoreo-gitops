@@ -1,0 +1,468 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterResourceType
+metadata:
+  name: langfuse
+  annotations:
+    openchoreo.dev/display-name: Langfuse
+    openchoreo.dev/description: Single-instance Langfuse web and worker with isolated shared dependencies
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      required:
+        - secretPath
+        - postgresqlHost
+        - postgresqlSuperuserSecretName
+        - redisHost
+        - minioHost
+        - minioRootSecretName
+        - clickhouseHost
+      properties:
+        secretPath:
+          type: string
+          minLength: 1
+        postgresqlHost:
+          type: string
+          minLength: 1
+        postgresqlSuperuserSecretName:
+          type: string
+          minLength: 1
+        redisHost:
+          type: string
+          minLength: 1
+        redisDatabase:
+          type: integer
+          default: 1
+          minimum: 1
+          maximum: 15
+        minioHost:
+          type: string
+          minLength: 1
+        minioRootSecretName:
+          type: string
+          minLength: 1
+        clickhouseHost:
+          type: string
+          minLength: 1
+        publicUrl:
+          type: string
+          default: http://langfuse:3000
+  retainPolicy: Retain
+  outputs:
+    - name: host
+      value: "${metadata.resourceName}.${metadata.namespace}.svc.cluster.local"
+    - name: port
+      value: "3000"
+    - name: secretName
+      value: "${metadata.resourceName}-creds"
+    - name: publicKey
+      secretKeyRef:
+        name: "${metadata.resourceName}-creds"
+        key: LANGFUSE_INIT_PROJECT_PUBLIC_KEY
+    - name: secretKey
+      secretKeyRef:
+        name: "${metadata.resourceName}-creds"
+        key: LANGFUSE_INIT_PROJECT_SECRET_KEY
+  resources:
+    - id: service-account
+      template:
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        automountServiceAccountToken: false
+    - id: credentials
+      readyWhen: '${has(applied.credentials.status.conditions) && applied.credentials.status.conditions.exists(c, c.type == "Ready" && c.status == "True")}'
+      template:
+        apiVersion: external-secrets.io/v1
+        kind: ExternalSecret
+        metadata:
+          name: ${metadata.resourceName}-creds
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          secretStoreRef:
+            kind: ClusterSecretStore
+            name: openbao
+          target:
+            name: ${metadata.resourceName}-creds
+            creationPolicy: Owner
+            template:
+              type: Opaque
+              data:
+                SALT: "{{ .salt }}"
+                ENCRYPTION_KEY: "{{ .encryption_key }}"
+                NEXTAUTH_SECRET: "{{ .nextauth_secret }}"
+                DATABASE_PASSWORD: "{{ .postgres_password }}"
+                REDIS_PASSWORD: "{{ .redis_password }}"
+                CLICKHOUSE_PASSWORD: "{{ .clickhouse_password }}"
+                LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: "{{ .minio_access_key }}"
+                LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: "{{ .minio_secret_key }}"
+                LANGFUSE_S3_BATCH_EXPORT_ACCESS_KEY_ID: "{{ .minio_access_key }}"
+                LANGFUSE_S3_BATCH_EXPORT_SECRET_ACCESS_KEY: "{{ .minio_secret_key }}"
+                LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: "{{ .minio_access_key }}"
+                LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: "{{ .minio_secret_key }}"
+                LANGFUSE_INIT_USER_EMAIL: "{{ .admin_email }}"
+                LANGFUSE_INIT_USER_PASSWORD: "{{ .admin_password }}"
+                LANGFUSE_INIT_PROJECT_PUBLIC_KEY: "{{ .project_public_key }}"
+                LANGFUSE_INIT_PROJECT_SECRET_KEY: "{{ .project_secret_key }}"
+                postgres_password: "{{ .postgres_password }}"
+                minio_access_key: "{{ .minio_access_key }}"
+                minio_secret_key: "{{ .minio_secret_key }}"
+          data:
+            - secretKey: salt
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: salt
+            - secretKey: encryption_key
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: encryption_key
+            - secretKey: nextauth_secret
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: nextauth_secret
+            - secretKey: admin_email
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: admin_email
+            - secretKey: admin_password
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: admin_password
+            - secretKey: project_public_key
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: project_public_key
+            - secretKey: project_secret_key
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: project_secret_key
+            - secretKey: postgres_password
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: postgres_password
+            - secretKey: redis_password
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: redis_password
+            - secretKey: minio_access_key
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: minio_access_key
+            - secretKey: minio_secret_key
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: minio_secret_key
+            - secretKey: clickhouse_password
+              remoteRef:
+                key: ${parameters.secretPath}
+                property: clickhouse_password
+    - id: config
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ${metadata.resourceName}-config
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        data:
+          NODE_ENV: production
+          LANGFUSE_LOG_LEVEL: info
+          LANGFUSE_LOG_FORMAT: json
+          TELEMETRY_ENABLED: "false"
+          AUTH_DISABLE_SIGNUP: "true"
+          ENABLE_EXPERIMENTAL_FEATURES: "false"
+          NEXTAUTH_URL: ${parameters.publicUrl}
+          DATABASE_HOST: ${parameters.postgresqlHost}
+          DATABASE_PORT: "5432"
+          DATABASE_USERNAME: langfuse
+          DATABASE_NAME: langfuse
+          LANGFUSE_AUTO_POSTGRES_MIGRATION_DISABLED: "false"
+          REDIS_TLS_ENABLED: "false"
+          CLICKHOUSE_MIGRATION_URL: "clickhouse://${parameters.clickhouseHost}:9000"
+          CLICKHOUSE_MIGRATION_SSL: "false"
+          CLICKHOUSE_URL: "http://${parameters.clickhouseHost}:8123"
+          CLICKHOUSE_DB: langfuse
+          CLICKHOUSE_USER: langfuse
+          CLICKHOUSE_CLUSTER_ENABLED: "false"
+          LANGFUSE_AUTO_CLICKHOUSE_MIGRATION_DISABLED: "false"
+          LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse-events
+          LANGFUSE_S3_EVENT_UPLOAD_REGION: us-east-1
+          LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: "http://${parameters.minioHost}:9000"
+          LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: "true"
+          LANGFUSE_S3_BATCH_EXPORT_ENABLED: "true"
+          LANGFUSE_S3_BATCH_EXPORT_BUCKET: langfuse-exports
+          LANGFUSE_S3_BATCH_EXPORT_REGION: us-east-1
+          LANGFUSE_S3_BATCH_EXPORT_ENDPOINT: "http://${parameters.minioHost}:9000"
+          LANGFUSE_S3_BATCH_EXPORT_FORCE_PATH_STYLE: "true"
+          LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: langfuse-media
+          LANGFUSE_S3_MEDIA_UPLOAD_REGION: us-east-1
+          LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: "http://${parameters.minioHost}:9000"
+          LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: "true"
+          LANGFUSE_S3_MEDIA_UPLOAD_MAX_CONTENT_LENGTH: "1000000000"
+          LANGFUSE_S3_MEDIA_UPLOAD_DOWNLOAD_URL_EXPIRY_SECONDS: "3600"
+          LANGFUSE_S3_CONCURRENT_READS: "50"
+          LANGFUSE_S3_CONCURRENT_WRITES: "50"
+          LANGFUSE_INIT_ORG_ID: agent-platform
+          LANGFUSE_INIT_ORG_NAME: Agent Platform
+          LANGFUSE_INIT_PROJECT_ID: agent-platform-development
+          LANGFUSE_INIT_PROJECT_NAME: Agent Platform Development
+          LANGFUSE_INIT_USER_NAME: Langfuse Administrator
+    - id: postgres-bootstrap
+      readyWhen: '${has(applied["postgres-bootstrap"].status.succeeded) && applied["postgres-bootstrap"].status.succeeded > 0}'
+      template:
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: ${metadata.resourceName}-postgres-bootstrap
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          backoffLimit: 12
+          ttlSecondsAfterFinished: 86400
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${metadata.resourceName}-postgres-bootstrap
+            spec:
+              restartPolicy: OnFailure
+              automountServiceAccountToken: false
+              containers:
+                - name: bootstrap
+                  image: postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+                  command:
+                    - /bin/sh
+                    - -ec
+                  args:
+                    - |
+                      set +x
+                      until pg_isready -h "$PGHOST" -p 5432 -U "$PGUSER"; do sleep 3; done
+                      escaped_password="$(printf '%s' "$LANGFUSE_POSTGRES_PASSWORD" | sed "s/'/''/g")"
+                      umask 077
+                      printf "DO \\\$\\\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'langfuse') THEN CREATE ROLE langfuse LOGIN PASSWORD '%s'; ELSE ALTER ROLE langfuse PASSWORD '%s'; END IF; END \\\$\\\$;\n" "$escaped_password" "$escaped_password" >/tmp/langfuse-role.sql
+                      psql -v ON_ERROR_STOP=1 -d postgres -f /tmp/langfuse-role.sql >/dev/null
+                      rm -f /tmp/langfuse-role.sql
+                      if ! psql -Atqc "SELECT 1 FROM pg_database WHERE datname = 'langfuse'" -d postgres | grep -q 1; then
+                        createdb -O langfuse langfuse
+                      fi
+                      psql -v ON_ERROR_STOP=1 -d postgres -c "ALTER DATABASE langfuse OWNER TO langfuse" >/dev/null
+                  env:
+                    - name: PGHOST
+                      value: ${parameters.postgresqlHost}
+                    - name: PGUSER
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${parameters.postgresqlSuperuserSecretName}
+                          key: username
+                    - name: PGPASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${parameters.postgresqlSuperuserSecretName}
+                          key: password
+                    - name: LANGFUSE_POSTGRES_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${metadata.resourceName}-creds
+                          key: postgres_password
+    - id: minio-bootstrap
+      readyWhen: '${has(applied["minio-bootstrap"].status.succeeded) && applied["minio-bootstrap"].status.succeeded > 0}'
+      template:
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: ${metadata.resourceName}-minio-bootstrap
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          backoffLimit: 12
+          ttlSecondsAfterFinished: 86400
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${metadata.resourceName}-minio-bootstrap
+            spec:
+              restartPolicy: OnFailure
+              automountServiceAccountToken: false
+              containers:
+                - name: bootstrap
+                  image: quay.io/minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
+                  command:
+                    - /bin/sh
+                    - -ec
+                  args:
+                    - |
+                      set +x
+                      export MC_HOST_root="http://$MINIO_ROOT_USER:$MINIO_ROOT_PASSWORD@$MINIO_HOST:9000"
+                      until mc ready root >/dev/null 2>&1; do sleep 3; done
+                      for bucket in langfuse-events langfuse-media langfuse-exports; do
+                        mc mb --ignore-existing "root/$bucket" >/dev/null
+                      done
+                      umask 077
+                      cat >/tmp/langfuse-policy.json <<'EOF'
+                      {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:GetBucketLocation","s3:ListBucket"],"Resource":["arn:aws:s3:::langfuse-events","arn:aws:s3:::langfuse-media","arn:aws:s3:::langfuse-exports"]},{"Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject"],"Resource":["arn:aws:s3:::langfuse-events/*","arn:aws:s3:::langfuse-media/*","arn:aws:s3:::langfuse-exports/*"]}]}
+                      EOF
+                      mc admin policy create root langfuse /tmp/langfuse-policy.json >/dev/null 2>&1 || mc admin policy info root langfuse >/dev/null
+                      mc admin user add root "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY" >/dev/null 2>&1 || mc admin user enable root "$MINIO_ACCESS_KEY" >/dev/null
+                      mc admin policy attach root langfuse --user "$MINIO_ACCESS_KEY" >/dev/null
+                      rm -f /tmp/langfuse-policy.json
+                  env:
+                    - name: MINIO_HOST
+                      value: ${parameters.minioHost}
+                    - name: MINIO_ROOT_USER
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${parameters.minioRootSecretName}
+                          key: accesskey
+                    - name: MINIO_ROOT_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${parameters.minioRootSecretName}
+                          key: secretkey
+                    - name: MINIO_ACCESS_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${metadata.resourceName}-creds
+                          key: minio_access_key
+                    - name: MINIO_SECRET_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${metadata.resourceName}-creds
+                          key: minio_secret_key
+    - id: service
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${metadata.resourceName}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          selector:
+            app.kubernetes.io/name: ${metadata.resourceName}
+            app.kubernetes.io/component: web
+          ports:
+            - name: http
+              port: 3000
+              targetPort: http
+    - id: web
+      readyWhen: '${has(applied.web.status.readyReplicas) && applied.web.status.readyReplicas == 1}'
+      template:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${metadata.resourceName}-web
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          replicas: 1
+          revisionHistoryLimit: 3
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${metadata.resourceName}
+              app.kubernetes.io/component: web
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${metadata.resourceName}
+                app.kubernetes.io/component: web
+            spec:
+              serviceAccountName: ${metadata.resourceName}
+              automountServiceAccountToken: false
+              containers:
+                - name: web
+                  image: langfuse/langfuse@sha256:35461119756177199bf4412ceed03e0f637ca5c4a6b8b85d9e31c35e515e670d
+                  imagePullPolicy: IfNotPresent
+                  envFrom:
+                    - configMapRef:
+                        name: ${metadata.resourceName}-config
+                    - secretRef:
+                        name: ${metadata.resourceName}-creds
+                  env:
+                    - name: REDIS_CONNECTION_STRING
+                      value: "redis://langfuse:$(REDIS_PASSWORD)@${parameters.redisHost}:6379/${string(parameters.redisDatabase)}"
+                    - name: PORT
+                      value: "3000"
+                    - name: HOSTNAME
+                      value: "0.0.0.0"
+                  ports:
+                    - name: http
+                      containerPort: 3000
+                  livenessProbe:
+                    httpGet:
+                      path: /api/public/health
+                      port: http
+                    initialDelaySeconds: 20
+                    periodSeconds: 10
+                    timeoutSeconds: 5
+                  readinessProbe:
+                    httpGet:
+                      path: /api/public/ready
+                      port: http
+                    initialDelaySeconds: 20
+                    periodSeconds: 10
+                    timeoutSeconds: 5
+                  resources:
+                    requests:
+                      cpu: 250m
+                      memory: 512Mi
+                    limits:
+                      cpu: "1"
+                      memory: 1Gi
+    - id: worker
+      readyWhen: '${has(applied.worker.status.readyReplicas) && applied.worker.status.readyReplicas == 1}'
+      template:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${metadata.resourceName}-worker
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          replicas: 1
+          revisionHistoryLimit: 3
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${metadata.resourceName}
+              app.kubernetes.io/component: worker
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${metadata.resourceName}
+                app.kubernetes.io/component: worker
+            spec:
+              serviceAccountName: ${metadata.resourceName}
+              automountServiceAccountToken: false
+              containers:
+                - name: worker
+                  image: langfuse/langfuse-worker@sha256:080377807b6d1fca2117662840161e60a0ab6842b2578ef39ea17df80ba42bfd
+                  imagePullPolicy: IfNotPresent
+                  envFrom:
+                    - configMapRef:
+                        name: ${metadata.resourceName}-config
+                    - secretRef:
+                        name: ${metadata.resourceName}-creds
+                  env:
+                    - name: REDIS_CONNECTION_STRING
+                      value: "redis://langfuse:$(REDIS_PASSWORD)@${parameters.redisHost}:6379/${string(parameters.redisDatabase)}"
+                    - name: HOSTNAME
+                      value: "0.0.0.0"
+                  ports:
+                    - name: http
+                      containerPort: 3030
+                  livenessProbe:
+                    httpGet:
+                      path: /api/health
+                      port: http
+                    initialDelaySeconds: 20
+                    periodSeconds: 10
+                    timeoutSeconds: 5
+                  resources:
+                    requests:
+                      cpu: 250m
+                      memory: 512Mi
+                    limits:
+                      cpu: "2"
+                      memory: 2Gi

@@ -99,3 +99,25 @@ spec:
     databaseName: langfuse
     storageClass: local-path
     storageGiB: 20
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: langfuse
+  namespace: agent-platform
+spec:
+  owner:
+    projectName: agent-platform
+  type:
+    kind: ClusterResourceType
+    name: langfuse
+  parameters:
+    secretPath: agent-platform/development/langfuse
+    postgresqlHost: postgresql-rw
+    postgresqlSuperuserSecretName: postgresql-superuser
+    redisHost: redis
+    redisDatabase: 1
+    minioHost: minio
+    minioRootSecretName: minio-creds
+    clickhouseHost: clickhouse
+    publicUrl: https://61.184.12.127:31007
