@@ -6,6 +6,8 @@ resources:
   - cluster-resource-type-rabbitmq.yaml
   - cluster-resource-type-milvus.yaml
   - cluster-resource-type-redis.yaml
+  - cluster-resource-type-clickhouse.yaml
+  - cluster-resource-type-langfuse.yaml
   - environment-development.yaml
   - environment-staging.yaml
   - environment-production.yaml

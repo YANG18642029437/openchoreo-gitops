@@ -7,3 +7,4 @@ resources:
   - project.yaml
   - resources.yaml
   - resource-bindings.yaml
+  - resource-type-langfuse-retention.yaml
